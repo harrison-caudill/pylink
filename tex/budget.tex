@@ -1,0 +1,89 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+%\usepackage{fullpage}
+
+\usepackage[printwatermark]{xwatermark}
+\usepackage{xcolor}
+\VAR{draftMark}
+%\textheight=9.0in
+
+%\pagestyle{empty}
+%\raggedbottom
+%\raggedright
+
+\pagenumbering{arabic}
+
+\title{\VAR{budgetTitle}}
+\author{\VAR{author}}
+
+\begin{document}
+
+\maketitle
+
+\VAR{intro}
+
+\newpage
+\section{Orbit}
+\label{section::orbit}
+\begin{center}
+  \VAR{orbitTable}
+\end{center}
+
+\newpage
+\section{Transmitter}
+\label{section::transmitter}
+\begin{center}
+  \VAR{transmitterTable}
+  \begin{figure}
+    \caption{TX Antenna Gain Pattern}
+    \includegraphics[width=\linewidth]{\VAR{txPatternFname}}
+    \label{fig::pattern::tx}
+  \end{figure}
+\end{center}
+
+
+\newpage
+\section{Channel}
+\label{section::channel}
+\begin{center}
+  \VAR{channelTable}
+\end{center}
+
+
+\newpage
+\section{Receiver}
+\label{section::receiver}
+\begin{center}
+  \VAR{receiverTable}
+  \vspace{0.1in}
+  \VAR{rxChainTable}
+  \begin{figure}
+    \caption{RX Antenna Gain Pattern}
+    \includegraphics[width=\linewidth]{\VAR{rxPatternFname}}
+    \label{fig::pattern::rx}
+  \end{figure}
+\end{center}
+
+
+\newpage
+\section{Interference}
+\label{section::interference}
+\begin{center}
+  \VAR{interferenceTable}
+  \VAR{interferenceFigures}
+\end{center}
+
+\VAR{addedSections}
+
+\newpage
+\section{Budget}
+\label{section::budget}
+\begin{center}
+  \VAR{table}
+  \VAR{budgetFigures}
+\end{center}
+
+\VAR{expo}
+
+\end{document}
