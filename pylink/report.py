@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import types
-import math
 import jinja2
 import os
 from jinja2 import Template
