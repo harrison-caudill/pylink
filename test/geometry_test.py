@@ -6,7 +6,7 @@ import pytest
 from testutils import model
 
 
-class TestOrbit(object):
+class TestGeometry(object):
 
     def test_mean_orbit_altitude_km(self, model):
         e = model.enum
