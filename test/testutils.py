@@ -25,11 +25,11 @@ def amplifier_10db():
                           noise_figure_db=3,
                           name='amplifier')
 
-perf = {
-    "BPSK": pylink.Code("BPSK", .5, .5, 5),
-    "QPSK": pylink.Code("QPSK", 1, 1, 8),
-    "8PSK": pylink.Code("8PSK", 2, 1, 12),
-    }
+perf = [
+    pylink.Code("BPSK", .5, .5, 4),
+    pylink.Code("QPSK", 1, 1, 8),
+    pylink.Code("8PSK", 2, 2, 12),
+    ]
 
 
 @pytest.fixture

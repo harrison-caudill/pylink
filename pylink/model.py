@@ -12,6 +12,10 @@ import utils
 from tagged_attribute import TaggedAttribute
 
 
+class LoopException(Exception):
+    pass
+
+
 class DAGModel(object):
 
     def __init__(self, contrib=[], **extras):
@@ -93,6 +97,11 @@ class DAGModel(object):
         if node in self._cache:
             return self._cache[node]
         else:
+            if node in self._stack:
+                stack = self._stack + [node]
+                stack = [self.node_name(n) for n in stack]
+                s = pprint.pformat(stack)
+                raise LoopException("\n=== LOOP DETECTED ===\n%s" % s)
             self._record_parent(node)
             self._stack.append(node)
             if node in self._values:

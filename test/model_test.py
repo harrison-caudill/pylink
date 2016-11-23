@@ -6,9 +6,53 @@ import pytest
 from testutils import model
 
 
-has_run = False
-
 class TestOrbit(object):
+
+    def test_loop_detection(self):
+        def __a(model):
+            return model.b
+
+        def __b(model):
+            return model.c
+
+        def __c(model):
+            return model.d
+
+        def __d(model):
+            return model.e
+
+        def __e(model):
+            return model.b
+
+        # a -> b -> c -> d -> e
+        #      ^              |
+        #      |              |
+        #      +--------------+
+
+        m = pylink.DAGModel(a=__a, b=__b, c=__c, d=__d, e=__e)
+
+        with pytest.raises(pylink.LoopException):
+            m.a
+
+    def test_basic_call(self):
+        def __a(model):
+            return model.b
+
+        def __b(model):
+            return 42
+
+        m = pylink.DAGModel(a=__a, b=__b)
+        assert 42 == m.a
+
+    def test_basic_value(self):
+        def __a(model):
+            return model.b
+
+        def __b(model):
+            return 42
+
+        m = pylink.DAGModel(a=__a, b=__b)
+        assert 42 == m.a
 
     def _wrap_func(self, func, **wrap_kwargs):
 

@@ -163,11 +163,13 @@ def _rx_ebn0_db(model):
     return model.rx_eb - model.rx_n0_dbw_per_hz
 
 
-def _required_ebn0_db(model):
-            return (model.required_demod_ebn0_db
-                    + model.implementation_loss_db
-                    + model.excess_noise_bandwidth_loss_db)
+def _additional_rx_losses_db(model):
+    return (model.implementation_loss_db
+            + model.excess_noise_bandwidth_loss_db)
 
+def _required_ebn0_db(model):
+    return (model.required_demod_ebn0_db
+            + model.additional_rx_losses_db)
 
 def _link_margin_db(model):
     return model.rx_ebn0_db - model.required_ebn0_db
@@ -212,6 +214,7 @@ class LinkBudget(object):
             'tx_eirp_dbw': _tx_eirp_dbw,
             'peak_tx_eirp_dbw': _peak_tx_eirp_dbw,
             'required_ebn0_db': _required_ebn0_db,
+            'additional_rx_losses_db': _additional_rx_losses_db,
 
             # constants
             'budget_name': name,

@@ -97,9 +97,9 @@ channel = pylink.Channel(bitrate_hz=500e3,
                          rain_loss_db=1,
                          multipath_fading_db=0,
                          polarization_mismatch_loss_db=3)
-modulation = pylink.Modulation(name='QPSK',
-                               required_ebn0_db=6,
-                               spectral_efficiency_bps_per_hz=1)
+
+# defaults to DVB-S2X
+modulation = pylink.Modulation()
 
 DOWNLINK = pylink.DAGModel([geometry,
                             gs_rx_antenna,

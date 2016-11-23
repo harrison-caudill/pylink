@@ -22,6 +22,7 @@ from element import Element
 from geometry import Geometry
 from interconnect import Interconnect
 from model import DAGModel
+from model import LoopException
 from modulation import Code
 from modulation import Modulation
 from receiver import Receiver
