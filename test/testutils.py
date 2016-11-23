@@ -25,6 +25,7 @@ def amplifier_10db():
                           noise_figure_db=3,
                           name='amplifier')
 
+
 perf = [
     pylink.Code("BPSK", .5, .5, 4),
     pylink.Code("QPSK", 1, 1, 8),
