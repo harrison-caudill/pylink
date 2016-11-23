@@ -15,21 +15,21 @@ __version__ = '0.3'
 __copyright__ = 'Copyright 2016, Spire Global Inc, All Rights Reserved'
 
 
+from antenna import Antenna
 from budget import LinkBudget
-from report import PFDFigure
-from report import BitrateFigure
-from report import Report
-from transmitter import Transmitter
-from receiver import Receiver
-from geometry import Geometry
-from modulation import Modulation
 from channel import Channel
 from element import Element
-from antenna import Antenna
+from geometry import Geometry
 from interconnect import Interconnect
-from tagged_attribute import TaggedAttribute
 from model import DAGModel
-
+from modulation import Code
+from modulation import Modulation
+from receiver import Receiver
+from report import BitrateFigure
+from report import PFDFigure
+from report import Report
+from tagged_attribute import TaggedAttribute
+from transmitter import Transmitter
 from utils import to_db
 from utils import from_db
 from utils import spreading_loss_db

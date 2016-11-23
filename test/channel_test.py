@@ -33,13 +33,6 @@ class TestChannel(object):
         m.override(e.center_freq_hz, 100e6)
         assert abs(m.wavelength_m - l) < 1e-4
 
-    def test_symbol_rate_sym_per_s(self, model):
-        e = model.enum
-        m = model
-        m.override(e.bitrate_hz, 1e5)
-        bps = m.bits_per_symbol
-        assert abs(m.symbol_rate_sym_per_s - (1e5/bps)) < 1e-6
-
     def test_bitrate_dbhz(self, model):
         e = model.enum
         m = model
@@ -66,7 +59,7 @@ class TestChannel(object):
         e = model.enum
         m = model
 
-        m.spectral_efficiency_bps_per_hz = 2
+        m.rx_spectral_efficiency_bps_per_hz = 2
         m.override(e.bitrate_hz, 50e3)
 
         assert abs(m.required_bw_hz - 25e3) < 1e-4

@@ -178,7 +178,8 @@ class LinkBudget(object):
     def __init__(self,
                  name='Link Budget',
                  is_downlink=True,
-                 rx_antenna_noise_temp_k=300):
+                 rx_antenna_noise_temp_k=300,
+                 target_margin_db=1.0):
 
         self.tribute = {
             # calculators
@@ -218,4 +219,5 @@ class LinkBudget(object):
             'boltzmann_J_per_K_db': utils.to_db(1.3806488e-23),
             'is_downlink': is_downlink,
             'rx_antenna_noise_temp_k': rx_antenna_noise_temp_k,
+            'target_margin_db': target_margin_db,
             }

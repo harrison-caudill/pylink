@@ -25,6 +25,13 @@ def amplifier_10db():
                           noise_figure_db=3,
                           name='amplifier')
 
+perf = {
+    "BPSK": pylink.Code("BPSK", .5, .5, 5),
+    "QPSK": pylink.Code("QPSK", 1, 1, 8),
+    "8PSK": pylink.Code("8PSK", 2, 1, 12),
+    }
+
+
 @pytest.fixture
 def model():
     return pylink.DAGModel([pylink.Geometry(),
@@ -35,5 +42,5 @@ def model():
                             pylink.Interconnect(is_rx=False),
                             pylink.Antenna(is_rx=False),
                             pylink.Channel(),
-                            pylink.Modulation('GMSK'),
+                            pylink.Modulation(name='QPSK', perf=perf),
                             pylink.LinkBudget()])

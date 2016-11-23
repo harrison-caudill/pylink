@@ -29,7 +29,7 @@ def _total_channel_loss_db(model):
 
 
 def _required_bw_hz(model):
-    return model.bitrate_hz / model.spectral_efficiency_bps_per_hz
+    return model.bitrate_hz / model.rx_spectral_efficiency_bps_per_hz
 
 
 def _required_bw_dbhz(model):

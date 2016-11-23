@@ -88,7 +88,7 @@ class TestBudget(object):
         m = model
         m.override(e.pf_dbw_per_m2, -100)
         m.override(e.bitrate_hz,
-                   m.spectral_efficiency_bps_per_hz * 40e3)
+                   m.tx_spectral_efficiency_bps_per_hz * 40e3)
         assert abs(m.pfd_dbw_per_m2_per_4khz - -110) < 1e-6
 
     def test_tx_inline_losses_db(self, model):
