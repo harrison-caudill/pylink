@@ -48,10 +48,6 @@ def _wavelength_m(model):
     return model.speed_of_light_m_per_s / model.center_freq_hz
 
 
-def _symbol_rate_sym_per_s(model):
-    return model.bitrate_hz / model.bits_per_symbol
-
-
 def _bitrate_dbhz(model):
     return utils.to_db(model.bitrate_hz)
 
@@ -78,7 +74,6 @@ class Channel(object):
             'unity_gain_propagation_loss_db': _unity_gain_propagation_loss_db,
             'total_channel_loss_db': _total_channel_loss_db,
             'wavelength_m': _wavelength_m,
-            'symbol_rate_sym_per_s': _symbol_rate_sym_per_s,
             'bitrate_dbhz': _bitrate_dbhz,
             'required_tx_bw_hz': _required_tx_bw_hz,
             'required_rx_bw_hz': _required_rx_bw_hz,

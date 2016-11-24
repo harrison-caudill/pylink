@@ -484,12 +484,13 @@ class Report(object):
                 ]),
 
             ('Modulation (%s)' % m.modulation_name, [
+                ('Modulation Name', m.modulation_name, ''),
+                ('Modulation Code', m.best_modulation_code.name, ''),
                 self._humanize_hz('Bitrate', m.bitrate_hz),
                 ('Bitrate', m.bitrate_dbhz, 'dBHz'),
-                self._humanize_hz('Symbol Rate', m.symbol_rate_sym_per_s),
                 ('Required Demodulation $E_b/N_0$', m.required_demod_ebn0_db, 'dB'),
-                self._humanize_hz('Required Bandwidth', m.required_bw_hz),
-                ('Required Bandwidth', m.required_bw_dbhz, 'dBHz'),
+                self._humanize_hz('Required Demod Bandwidth', m.required_rx_bw_hz),
+                ('Required Demod Bandwidth', m.required_rx_bw_dbhz, 'dBHz'),
                 ]),
             ])
 
@@ -526,7 +527,7 @@ class Report(object):
                 self._humanize_hz('Center Frequency', m.center_freq_hz),
                 ('Free Space Loss', m.unity_gain_propagation_loss_db, 'dB'),
                 ('Total Channel Loss', m.total_channel_loss_db, 'dB'),
-                ('Occupied Bandwidth', m.required_bw_dbhz, 'dBHz'),
+                ('Occupied Bandwidth', m.required_tx_bw_dbhz, 'dBHz'),
                 ]),
 
             ('Receiver', [
