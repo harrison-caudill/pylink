@@ -83,8 +83,8 @@ Point 4
 -------
 
 Point 4 is, perhaps, the most complicated.  It introduces a cycle into
-the model (as you can see above in [Cycles](#cycles)), and also necessitates
-a bit of rethinking.
+the model (as you can see above in [Cycles](README.md#cycles)), and
+also necessitates a bit of rethinking.
 
 Previously, you'd do something like this:
 ```python
