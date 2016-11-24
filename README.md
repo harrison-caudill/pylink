@@ -222,7 +222,7 @@ Now that the logic has been separated out, you would do this instead:
 ```python
 report = pylink.Report(my_awesome_budget)
 report.to_latex('awesome.tex',
-                'The Incredible Hulk',
+                author='The Incredible Hulk',
                 intro='And now, for a budget that needs no intro',
                 watermark_text="Ruh Roh")
 ```
