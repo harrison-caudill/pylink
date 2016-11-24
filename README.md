@@ -156,9 +156,6 @@ Hints for migrating from previous versions are included here.
 `< 0.3 -> 0.3`
 --------------
 
-This rev is *mostly* backwards compatible.  `LinkBudget` was becoming
-a god-class, so I separated out its 3 main contributions as follows:
-
  1. `LinkBudget` is now a Tributary, just like `channel`, or `geometry`
 
  2. The logic to combine all of the tributaries now resides inside of
