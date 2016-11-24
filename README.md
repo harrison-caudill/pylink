@@ -271,7 +271,8 @@ modelling_clay = pylink.DAGModel([pylink.Geometry(),
                                   pylink.LinkBudget()])
 modulation = pylink.Modulation()
 ```
-The `Modulation` tributary defaults to DVB-S2X.
+The `Modulation` tributary defaults to DVB-S2X, with 80% efficiency of
+the transmit spectral efficiency.
 
 Point 5 should be pretty obvious as you go.  For example,
 `spectral_efficiency_bps_per_hz` doesn't exist anymore since we
