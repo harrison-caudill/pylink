@@ -153,7 +153,7 @@ Changelog & Migrations
 
 Hints for migrating from previous versions are included here.
 
-`0.2 -> 0.3`
+0.2 -> 0.3
 --------------
 
  1. `LinkBudget` is now a Tributary, just like `channel`, or `geometry`
