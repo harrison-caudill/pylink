@@ -202,3 +202,7 @@ class TestModel(object):
         m = pylink.DAGModel(A=f_A, B=f_B, C=f_C, D=f_D, C_opt=f_C_opt)
 
         assert m.A == 3
+
+    def test_all_nodes(self, model):
+        for node in model.nodes():
+            model.cached_calculate(node)

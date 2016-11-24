@@ -275,3 +275,6 @@ class DAGModel(object):
             stop = min(retval + ostep/2.0 + 2*step, stop)
 
         return retval
+
+    def nodes(self):
+        return self._names.keys()

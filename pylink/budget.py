@@ -226,6 +226,7 @@ class LinkBudget(object):
             'peak_tx_eirp_dbw': _peak_tx_eirp_dbw,
             'required_ebn0_db': _required_ebn0_db,
             'additional_rx_losses_db': _additional_rx_losses_db,
+            'peak_pfd_dbw_per_m2_per_hz': _peak_pfd_dbw_per_m2_per_hz,
 
             # constants
             'budget_name': name,
