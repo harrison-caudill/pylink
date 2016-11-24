@@ -44,9 +44,6 @@ Submodules
  * `model.py`: Contains the actual DAG Model class that houses the core
                logic of the calculations.
 
- * `budget.py`: Contains the logic to combine all of the tributaries
-                into a single model.
-
  * `utils.py`: Utilities
 
  * `*.py`: Tributaries.  These each provide boilerplate inputs and
