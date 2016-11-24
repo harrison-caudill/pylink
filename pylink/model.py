@@ -18,10 +18,7 @@ class LoopException(Exception):
 
 class DAGModel(object):
 
-    def __init__(self, contrib=[], enable_loop_detection=True, **extras):
-
-        # FIXME: need details here 
-        self.enable_loop_detection = enable_loop_detection
+    def __init__(self, contrib=[], **extras):
 
         # calculate the list of node names & enum
         names = []
@@ -86,46 +83,60 @@ class DAGModel(object):
     def _record_parent(self, node):
         if len(self._stack):
             dep = self._stack[-1]
-            self._deps.setdefault(dep, {node:0})
-            self._deps[dep].setdefault(node, 0)
-            self._deps[dep][node] += 1
-        self._map_dependencies()
+            self._add_dependency_impl(node, dep)
 
     def print_dependencies(self):
         pprint.pprint(self._dep_names)
         pprint.pprint(self._flat_dep_names)
         pprint.pprint(self._client_names)
 
+    def _add_dependency_impl(self, node, dep):
+        self._deps.setdefault(dep, {node:0})
+        self._deps[dep].setdefault(node, 0)
+        self._deps[dep][node] += 1
+        self._map_dependencies()
+
     def _cached_calculate(self, node):
         if node in self._cache:
+            print 'Serving Cache: %s = %s' % (self.node_name(node), self._cache[node])
             return self._cache[node]
         else:
-            if node in self._stack and self.enable_loop_detection:
-                stack = self._stack + [node]
-                stack = [self.node_name(n) for n in stack]
-                s = pprint.pformat(stack)
-                raise LoopException("\n=== LOOP DETECTED ===\n%s" % s)
+            return self.calculate(node)
+
+    def calculate(self, node, skip_cur_node=False):
+        if node in self._stack and not skip_cur_node:
+            stack = self._stack + [node]
+            stack = [self.node_name(n) for n in stack]
+            s = pprint.pformat(stack)
+            raise LoopException("\n=== LOOP DETECTED ===\n%s" % s)
+
+        if not skip_cur_node:
             self._record_parent(node)
             self._stack.append(node)
-            if node in self._values:
-                retval = self._values[node]
-            else:
-                retval = self._calc[node](self)
-            self._cache_put(node, retval)
+        if node in self._values:
+            retval = self._values[node]
+        else:
+            retval = self._calc[node](self)
+        self._cache_put(node, retval)
+        if not skip_cur_node:
             self._stack.pop()
-            return retval
+        return retval
 
     def _cache_clear(self, node=None):
         if node is not None:
+            print 'CLEARING: %s' % self.node_name(node)
             if node in self._cache:
+                print '  DEL: %s' % self.node_name(node)
                 del self._cache[node]
             for client in self._clients[node]:
                 if client in self._cache:
+                    print '  DEL: %s' % self.node_name(client)
                     del self._cache[client]
         else:
             self._init_cache()
 
     def _cache_put(self, node, value):
+        print 'PUTTING: %s=%s' % (self.node_name(node), value)
         self._cache[node] = value
 
     def __getattr__(self, name):

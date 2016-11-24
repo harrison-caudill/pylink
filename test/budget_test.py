@@ -78,10 +78,9 @@ class TestBudget(object):
     def test_link_margin_db(self, model):
         e = model.enum
         m = model
-        req_ebn0 = m.required_ebn0_db
         m.override(e.rx_ebn0_db, 50)
-        m.override(e.excess_noise_bandwidth_loss_db, 10)
-        assert abs(m.link_margin_db - (40 - req_ebn0)) < 1e-4
+        m.override(e.required_ebn0_db, 10)
+        assert abs(m.link_margin_db - 40) < 1e-4
 
     def test_pfd_dbw_per_m2_per_4khz(self, model):
         e = model.enum
@@ -89,6 +88,11 @@ class TestBudget(object):
         m.override(e.pf_dbw_per_m2, -100)
         m.override(e.bitrate_hz,
                    m.tx_spectral_efficiency_bps_per_hz * 40e3)
+
+        print m.tx_spectral_efficiency_bps_per_hz
+        print m.rx_spectral_efficiency_bps_per_hz
+        print m.bitrate_hz
+        print m.required_rx_bw_hz
 
         # NOTE!!!
         # We pull some trickery in here when selecting the best

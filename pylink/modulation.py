@@ -93,39 +93,35 @@ def _best_modulation_code(model):
     Yes, this *can* be done analytically, but it turns out to be
     pretty easy to sweep through all of the options here.
     Additionally, this method allows us to maintain the quasi-hidden
-    nature of the DAG model.
+    nature of the DAG model.  Additional Rx Losses are calculated
+    inside of budget.py, so we leave it there.  We do breakout
+    __max_bitrate_hz, though, to make things a bit cleaner.
 
     Follow this example at your own peril.
     """
 
-    # This table associates the C/N0 required at the demodulator to
-    # completely fill the available allocation.  If you have a
-    # transmit spectral efficiency of 2bps/hz, and you have 500kHz of
-    # allocation, then you can transmit at no more than 1Mbps.  If
-    # your Eb/N0 is 5, let's say, then you need 65dB of C/N0 to max
-    # out your allocation.  This table associates the filling C/N0
-    table = {}
-    allocation = model.allocation_hz
-    for code in model.modulation_performance_table:
-        bitrate = allocation * code.tx_eff
-        req_cn0 = utils.to_db(bitrate) + code.req_demod_ebn0_db()
-        table[req_cn0] = code
-        code.req_cn0 = req_cn0
-
-    keys = table.keys()
-    keys.sort()
     e = model.enum
 
+    # Ensure dependencies are registered.  This is done by registering
+    # a static value for this node so that it has something to compute
+    # from, then by manually computing the looping value.  That way,
+    # we can register its dependency tree without encountering a loop.
+    # To do that, though, we have to use the call listed below which
+    # allows us to execute the computation while skipping the very
+    # first node in the loop-checking and dependency tracking.
+    model.override(e.best_modulation_code,
+                   model.modulation_performance_table[0])
+    allocation = model.allocation_hz
+    model.calculate(e.best_modulation_code, skip_cur_node=True)
+    model.calculate(e.additional_rx_losses_db, skip_cur_node=True)
 
     best_option = None
     best_bitrate = -1
 
-    loop_detection = model.enable_loop_detection
-    model.enable_loop_detection = False
+    orig_eff = model.override_value(e.rx_spectral_efficiency_bps_per_hz)
 
-    for req_cn0 in keys:
-        code = table[req_cn0]
-        orig_eff = model.override_value(e.rx_spectral_efficiency_bps_per_hz)
+    for code in model.modulation_performance_table:
+
         model.override(e.best_modulation_code, code)
         model.override(e.rx_spectral_efficiency_bps_per_hz, code.rx_eff)
 
@@ -140,13 +136,11 @@ def _best_modulation_code(model):
             best_option = code
             best_bitrate = R
 
-        model.revert(e.best_modulation_code)
-        if orig_eff is None:
-            model.revert(e.rx_spectral_efficiency_bps_per_hz)
-        else:
-            model.override(e.rx_spectral_efficiency_bps_per_hz, orig_eff)
-
-    model.enable_loop_detection = loop_detection
+    model.revert(e.best_modulation_code)
+    if orig_eff is None:
+        model.revert(e.rx_spectral_efficiency_bps_per_hz)
+    else:
+        model.override(e.rx_spectral_efficiency_bps_per_hz, orig_eff)
     return best_option
 
 
