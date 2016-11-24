@@ -212,7 +212,7 @@ logic within `LinkBudget`, so you'd do things like this:
 
 ```python
 my_awesome_budget.to_latex('awesome.tex',
-                           'The Incredible Hulk',
+                           author='The Incredible Hulk',
                            intro='And now, for a budget that needs no intro',
                            watermark_text="Ruh Roh")
 ```
