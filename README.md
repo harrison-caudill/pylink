@@ -100,3 +100,52 @@ primary mechanisms by which tagging occurs:
 
 You'll find examples of both of these usages in the `examples`
 directory.
+
+Cycles
+------
+
+In some circumstances, cycles do exist, breaking the DAG nature of
+this system.  Under very special circumstances, we can deal with
+those.  If one of the items in the loop exists within a finite set,
+then you can do an O(N) search across all of those options, to
+determine the most appropriate value.  A real-life example can be
+found in `modulation.py`:
+
+```
+best_modulation_code
+ -> additional_rx_losses_db
+ -> excess_noise_bandwidth_loss_db
+ -> required_rx_bw_dbhz
+ -> required_rx_bw_hz
+ -> rx_spectral_efficiency_bps_per_hz
+ -> best_modulation_code
+```
+
+The way we get around this issue, is to recognize that
+`best_modulation_code` exists within a finite set (specifically all
+available modulation options).  That allows us to, essentially, fake
+the return value of our own function, observe a figure of merit, and
+return the appropriate value at the end.  To introduce a cycle, you'll
+need to do the following:
+
+ 1. Loop through all possible options
+
+ 2. In your loop, start by overriding the value you are attempting to
+    compute to the current option
+
+ 3. Compute the value that induces a cycle with `clear_stack=True`
+
+ 4. Revert the value you are attempting to calculate
+
+For example:
+```python
+def _cycle_inducement(model):
+    e = model.enum
+
+    for option in model.cycle_inducement_options: # Step 1
+        model.override(e.cycle_inducement, option) # Step 2
+        cycle = model.cached_calculate(e.cycle, clear_stack=True) # Step 3
+        model.revert(e.cycle_inducement) # Step 4
+```
+
+You can also find a unit-test of this behavior in `model_test.py`.

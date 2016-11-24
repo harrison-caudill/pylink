@@ -6,7 +6,7 @@ import pytest
 from testutils import model
 
 
-class TestOrbit(object):
+class TestModel(object):
 
     def test_loop_detection(self):
         def __a(model):
@@ -164,3 +164,41 @@ class TestOrbit(object):
 
         m.C
         assert 1 == self._state_c, "C was recalculated"
+
+
+    def test_loop_induction(self):
+        """Ensures that a loop-inducing calculation can be made
+
+        A -> B -> C -> D -> B
+
+        C is a member of set {1, 2, 3}
+        """
+
+        def f_A(m):
+            return m.B
+
+        def f_B(m):
+            return m.C
+        
+        def f_C(m):
+            e = m.enum
+
+            retval = -1
+
+            for v in m.C_opt:
+                m.override(e.C, v)
+                b = m.cached_calculate(e.B, clear_stack=True)
+                m.revert(e.C)
+                retval = max(retval, b)
+
+            return retval
+        
+        def f_D(m):
+            return m.B
+
+        def f_C_opt(m):
+            return [1, 2, 3]
+
+        m = pylink.DAGModel(A=f_A, B=f_B, C=f_C, D=f_D, C_opt=f_C_opt)
+
+        assert m.A == 3
