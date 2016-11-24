@@ -77,6 +77,8 @@ class DAGModel(object):
         self._clients = self._client_list(self._flat_deps)
         self._client_names = self._named_deplist(self._clients)
 
+        self._deps_are_stale = False
+
     def _init_cache(self):
         self._cache = {}
 
@@ -86,6 +88,10 @@ class DAGModel(object):
             self._add_dependency_impl(node, dep)
 
     def print_dependencies(self):
+        if self._deps_are_stale:
+            # This call is quite expensive, so we only want to do so
+            # if necessary.
+            self._map_dependencies()
         pprint.pprint(self._dep_names)
         pprint.pprint(self._flat_dep_names)
         pprint.pprint(self._client_names)
@@ -94,62 +100,62 @@ class DAGModel(object):
         self._deps.setdefault(dep, {node:0})
         self._deps[dep].setdefault(node, 0)
         self._deps[dep][node] += 1
-        self._map_dependencies()
+        if self._deps[dep][node] == 1:
+            self._deps_are_stale = True
 
     def _cached_calculate(self, node):
+        self._record_parent(node)
         if node in self._cache:
-            print 'Serving Cache: %s = %s' % (self.node_name(node), self._cache[node])
             return self._cache[node]
         else:
-            return self.calculate(node)
+            return self._calculate(node)
 
-    def calculate(self, node, skip_cur_node=False):
-        if node in self._stack and not skip_cur_node:
+    def _calculate(self, node):
+
+        if node in self._stack:
             stack = self._stack + [node]
             stack = [self.node_name(n) for n in stack]
             s = pprint.pformat(stack)
             raise LoopException("\n=== LOOP DETECTED ===\n%s" % s)
 
-        if not skip_cur_node:
-            self._record_parent(node)
-            self._stack.append(node)
+        self._stack.append(node)
+
         if node in self._values:
             retval = self._values[node]
         else:
             retval = self._calc[node](self)
+
         self._cache_put(node, retval)
-        if not skip_cur_node:
-            self._stack.pop()
+        self._stack.pop()
         return retval
 
     def _cache_clear(self, node=None):
+        if self._deps_are_stale:
+            # This call is quite expensive, so we only want to do so
+            # if necessary.
+            self._map_dependencies()
+
         if node is not None:
-            print 'CLEARING: %s' % self.node_name(node)
             if node in self._cache:
-                print '  DEL: %s' % self.node_name(node)
                 del self._cache[node]
             for client in self._clients[node]:
                 if client in self._cache:
-                    print '  DEL: %s' % self.node_name(client)
                     del self._cache[client]
         else:
             self._init_cache()
 
     def _cache_put(self, node, value):
-        print 'PUTTING: %s=%s' % (self.node_name(node), value)
         self._cache[node] = value
 
     def __getattr__(self, name):
         if name in self._nodes:
-            return self._calculate(self.node_num(name))
+            node = self.node_num(name)
+            if node not in self._values and node not in self._calc:
+                name = self.node_name(node)
+                msg = "It looks like you're missing an item: %s" % name
+                raise AttributeError(msg)
+            return self._cached_calculate(node)
         raise AttributeError("No attribute found: %s" % name)
-
-    def _calculate(self, node):
-        if node not in self._values and node not in self._calc:
-            name = self.node_name(node)
-            msg = "It looks like you're missing an item: %s" % name
-            raise AttributeError(msg)
-        return self._cached_calculate(node)
 
     def _top_client_list(self):
         retval = {}

@@ -19,7 +19,6 @@ class TestModulation(object):
         m.override(e.cn0_db, 65)
         m.override(e.target_margin_db, 5)
         code = m.best_modulation_code
-        print 'what we got:', code.name
         assert m.best_modulation_code.name == 'BPSK'
 
         # Make sure it's the middle
@@ -87,16 +86,6 @@ class TestModulation(object):
         m.override(e.allocation_hz, 1e6)
         m.override(e.cn0_db, 73)
         m.override(e.target_margin_db, 5)
-
-        # NOTE!!!
-        # We pull some trickery in here when selecting the best
-        # modulation code.  Unfortunately, py.test allow recurision
-        # with state being held in global variables.  Take a look at
-        # the _best_modulation_code method in modulation.py for more
-        # details on what's going on here.  For now, note that we have
-        # to cache the modulation code first so that py.test does not
-        # find a recursive loop.
-        m.best_modulation_code
 
         assert m.rx_spectral_efficiency_bps_per_hz == 1
 

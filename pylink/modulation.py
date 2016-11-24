@@ -12,7 +12,11 @@ class Code(object):
         self.tx_eff = tx_eff
         self.rx_eff = rx_eff
         self.esn0_db = esn0_db
-        self.req_cn0 = None
+
+        # cached values
+        self.saturating_cn0 = None
+        self.max_unconstrained_bitrate = None
+        self.max_constrained_bitrate = None
 
     def req_demod_ebn0_db(self):
         return self.esn0_db - utils.to_db(self.rx_eff)
@@ -76,71 +80,48 @@ def __max_bitrate_hz(cn0_db,
     return utils.from_db(cn0 - ebn0)
 
 
-def _best_modulation_code(model):
-    """
-
-    This one is a bit complicated.  This is a circular depenency
-    (yeah, that thing that breaks the whole concept of a DAG).  Well,
-    almost anyway.
-
-    To be more specific, Excess Noise Bandwidth Loss is dependent upon
-    the Required Demodulation Bandwidth.  That bandwidth is dependent
-    upon the Spectral Efficiency, which is dependent upon the Code
-    selection.  So far so goods, no loops.  To select the best code,
-    one must know about the excess noise bandwidth losses and account
-    for that in code selection.
-
-    Yes, this *can* be done analytically, but it turns out to be
-    pretty easy to sweep through all of the options here.
-    Additionally, this method allows us to maintain the quasi-hidden
-    nature of the DAG model.  Additional Rx Losses are calculated
-    inside of budget.py, so we leave it there.  We do breakout
-    __max_bitrate_hz, though, to make things a bit cleaner.
-
-    Follow this example at your own peril.
-    """
-
+def _modulation_code_lookup_table(model):
     e = model.enum
 
-    # Ensure dependencies are registered.  This is done by registering
-    # a static value for this node so that it has something to compute
-    # from, then by manually computing the looping value.  That way,
-    # we can register its dependency tree without encountering a loop.
-    # To do that, though, we have to use the call listed below which
-    # allows us to execute the computation while skipping the very
-    # first node in the loop-checking and dependency tracking.
-    model.override(e.best_modulation_code,
-                   model.modulation_performance_table[0])
     allocation = model.allocation_hz
-    model.calculate(e.best_modulation_code, skip_cur_node=True)
-    model.calculate(e.additional_rx_losses_db, skip_cur_node=True)
 
     best_option = None
     best_bitrate = -1
 
-    orig_eff = model.override_value(e.rx_spectral_efficiency_bps_per_hz)
+    retval = {}
 
     for code in model.modulation_performance_table:
-
-        model.override(e.best_modulation_code, code)
-        model.override(e.rx_spectral_efficiency_bps_per_hz, code.rx_eff)
-
-        max_unconstrained = __max_bitrate_hz(model.cn0_db,
-                                             model.additional_rx_losses_db,
-                                             model.target_margin_db,
-                                             code.req_demod_ebn0_db())
         max_constrained = allocation * code.tx_eff
-        R = min(max_unconstrained, max_constrained)
-                
+        code.max_constrained_bitrate = max_constrained
+        code.saturating_cn0 = code.req_demod_ebn0_db() * max_constrained
+
+        retval[max_constrained] = code
+
+    return retval
+
+
+def _best_modulation_code(model):
+    e = model.enum
+
+    allocation = model.allocation_hz
+    cn0_db = model.cn0_db
+    implementation_loss_db = model.implementation_loss_db
+    target_margin_db = model.target_margin_db
+
+    best_option = None
+    best_bitrate = -1
+
+    for sat_cn0, code in model.modulation_code_lookup_table.iteritems():
+        max_unconstrained = __max_bitrate_hz(cn0_db,
+                                             implementation_loss_db,
+                                             target_margin_db,
+                                             code.req_demod_ebn0_db())
+        R = min(max_unconstrained, code.max_constrained_bitrate)
+
         if R > best_bitrate:
             best_option = code
             best_bitrate = R
 
-    model.revert(e.best_modulation_code)
-    if orig_eff is None:
-        model.revert(e.rx_spectral_efficiency_bps_per_hz)
-    else:
-        model.override(e.rx_spectral_efficiency_bps_per_hz, orig_eff)
     return best_option
 
 
@@ -174,6 +155,7 @@ class Modulation(object):
             'tx_spectral_efficiency_bps_per_hz': _tx_spectral_efficiency_bps_per_hz,
             'rx_spectral_efficiency_bps_per_hz': _rx_spectral_efficiency_bps_per_hz,
             'max_bitrate_hz': _max_bitrate_hz,
+            'modulation_code_lookup_table': _modulation_code_lookup_table,
 
             # constants
             'modulation_name': name,
