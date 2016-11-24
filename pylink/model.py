@@ -103,14 +103,27 @@ class DAGModel(object):
         if self._deps[dep][node] == 1:
             self._deps_are_stale = True
 
-    def _cached_calculate(self, node):
+    def cached_calculate(self, node, clear_stack=False):
+        if clear_stack:
+            orig_stack = self._stack
+            self._stack = []
+
         self._record_parent(node)
         if node in self._cache:
-            return self._cache[node]
+            retval = self._cache[node]
         else:
-            return self._calculate(node)
+            retval = self._calculate(node)
 
-    def _calculate(self, node):
+        if clear_stack:
+            self._stack = orig_stack
+        return retval
+
+
+    def _calculate(self, node, stack=None):
+
+        if stack:
+            orig_stack = self._stack
+            self._stack = stack
 
         if node in self._stack:
             stack = self._stack + [node]
@@ -127,6 +140,10 @@ class DAGModel(object):
 
         self._cache_put(node, retval)
         self._stack.pop()
+
+        if stack:
+            self._stack = orig_stack
+
         return retval
 
     def _cache_clear(self, node=None):
@@ -154,7 +171,7 @@ class DAGModel(object):
                 name = self.node_name(node)
                 msg = "It looks like you're missing an item: %s" % name
                 raise AttributeError(msg)
-            return self._cached_calculate(node)
+            return self.cached_calculate(node)
         raise AttributeError("No attribute found: %s" % name)
 
     def _top_client_list(self):
@@ -224,12 +241,12 @@ class DAGModel(object):
         self.revert(fixed)
 
         best_val = start
-        best_diff = abs(fixed_value - self._calculate(fixed))
+        best_diff = abs(fixed_value - self.cached_calculate(fixed))
         
         for i in xrange(0, int((stop-start)/step), 1):
             val = start + step*i
             self.override(var, val)
-            diff = abs(fixed_value - self._calculate(fixed))
+            diff = abs(fixed_value - self.cached_calculate(fixed))
             if diff < best_diff:
                 best_diff = diff
                 best_val = val

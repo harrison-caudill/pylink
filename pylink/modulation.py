@@ -108,12 +108,21 @@ def _best_modulation_code(model):
     implementation_loss_db = model.implementation_loss_db
     target_margin_db = model.target_margin_db
 
+
+    # DANGER WILL ROBINSON!!
+    model.override(e.best_modulation_code,model.modulation_performance_table[0])
+    added_loss = model.cached_calculate(e.additional_rx_losses_db,
+                                        clear_stack=True)
+    model.revert(e.best_modulation_code)
+    # DANGER WILL ROBINSON!!
+
+
     best_option = None
     best_bitrate = -1
 
     for sat_cn0, code in model.modulation_code_lookup_table.iteritems():
         max_unconstrained = __max_bitrate_hz(cn0_db,
-                                             implementation_loss_db,
+                                             added_loss,
                                              target_margin_db,
                                              code.req_demod_ebn0_db())
         R = min(max_unconstrained, code.max_constrained_bitrate)
