@@ -79,15 +79,23 @@ def _modulation_lookup_table(model):
 
 
 def _best_modulation_code(model):
-    cn0 = model.cn0_db - model.target_margin_db - model.implementation_loss_db
     table = model.modulation_lookup_table
     keys = table.keys()
     keys.sort()
     best_option = table[keys[0]]
+    e = model.enum
+
     for req_cn0 in keys:
+
         code = table[req_cn0]
+
+        cn0 = (model.cn0_db
+               - model.target_margin_db
+               - model.implementation_loss_db)
+
         if cn0 >= req_cn0:
             best_option = code
+
     return best_option
 
 

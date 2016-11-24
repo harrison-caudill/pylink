@@ -58,7 +58,7 @@ class TestBudget(object):
         e = model.enum
         m = model
         m.override(e.rx_noise_bw_hz, 1e6)
-        m.override(e.required_bw_hz, 1e5)
+        m.override(e.required_rx_bw_hz, 1e5)
         assert abs(m.excess_noise_bandwidth_loss_db - 10) < 1e-6
 
     def test_rx_eb(self, model):

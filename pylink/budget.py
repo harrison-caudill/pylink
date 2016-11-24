@@ -84,43 +84,52 @@ def _peak_pf_at_geo_dbw_per_m2(model):
     return (model.peak_tx_eirp_dbw - spreading)
 
 
-def _to_hz(model, v):
-    return v - utils.to_db(model.required_bw_hz)
+def _to_tx_hz(model, v):
+    return v - utils.to_db(model.required_tx_bw_hz)
+
+
+def _to_rx_hz(model, v):
+    return v - utils.to_db(model.required_rx_bw_hz)
 
 
 def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.peak_pf_at_geo_dbw_per_m2)
+    return _to_rx_hz(model, model.peak_pf_at_geo_dbw_per_m2)
 
 
 def _compliance_pfd_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.compliance_pf_dbw_per_m2)
+    return _to_rx_hz(model, model.compliance_pf_dbw_per_m2)
 
 
 def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.peak_pf_at_geo_dbw_per_m2)
+    return _to_rx_hz(model, model.peak_pf_at_geo_dbw_per_m2)
 
 
 def _peak_pfd_at_geo_dbw_per_m2_per_4khz(model):
-    return _to_n_hz(model, model.peak_pfd_at_geo_dbw_per_m2_per_hz, 4e3)
+    return _to_n_rx_hz(model, model.peak_pfd_at_geo_dbw_per_m2_per_hz, 4e3)
 
 
 def _pfd_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.pf_dbw_per_m2)
+    return _to_rx_hz(model, model.pf_dbw_per_m2)
 
-def _to_n_hz(model, base, n):
-    return (base + utils.to_db(min(model.required_bw_hz, n)))
+
+def _to_n_tx_hz(model, base, n):
+    return (base + utils.to_db(min(model.required_tx_bw_hz, n)))
+
+
+def _to_n_rx_hz(model, base, n):
+    return (base + utils.to_db(min(model.required_rx_bw_hz, n)))
 
 
 def _pfd_dbw_per_m2_per_4khz(model):
-    return _to_n_hz(model, model.pfd_dbw_per_m2_per_hz, 4e3)
+    return _to_n_rx_hz(model, model.pfd_dbw_per_m2_per_hz, 4e3)
 
 
 def _peak_pfd_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.peak_pf_dbw_per_m2)
+    return _to_rx_hz(model, model.peak_pf_dbw_per_m2)
 
 
 def _peak_pfd_dbw_per_m2_per_4khz(model):
-    return _to_n_hz(model, model.peak_pfd_dbw_per_m2_per_hz, 4e3)
+    return _to_n_rx_hz(model, model.peak_pfd_dbw_per_m2_per_hz, 4e3)
 
 
 def _rx_power_dbw(model):
@@ -150,7 +159,7 @@ def _cn0_db(model):
 
 
 def _excess_noise_bandwidth_loss_db(model):
-    req_bw = model.required_bw_dbhz
+    req_bw = model.required_rx_bw_dbhz
     noise_bw = utils.to_db(model.rx_noise_bw_hz) if model.rx_noise_bw_hz else req_bw
     return noise_bw - req_bw
 
@@ -167,9 +176,11 @@ def _additional_rx_losses_db(model):
     return (model.implementation_loss_db
             + model.excess_noise_bandwidth_loss_db)
 
+
 def _required_ebn0_db(model):
     return (model.required_demod_ebn0_db
             + model.additional_rx_losses_db)
+
 
 def _link_margin_db(model):
     return model.rx_ebn0_db - model.required_ebn0_db

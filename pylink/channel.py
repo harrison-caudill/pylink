@@ -28,12 +28,20 @@ def _total_channel_loss_db(model):
             + model.multipath_fading_db)
 
 
-def _required_bw_hz(model):
+def _required_tx_bw_hz(model):
+    return model.bitrate_hz / model.tx_spectral_efficiency_bps_per_hz
+
+
+def _required_rx_bw_hz(model):
     return model.bitrate_hz / model.rx_spectral_efficiency_bps_per_hz
 
 
-def _required_bw_dbhz(model):
-    return utils.to_db(model.required_bw_hz)
+def _required_tx_bw_dbhz(model):
+    return utils.to_db(model.required_tx_bw_hz)
+
+
+def _required_rx_bw_dbhz(model):
+    return utils.to_db(model.required_rx_bw_hz)
 
 
 def _wavelength_m(model):
@@ -72,8 +80,10 @@ class Channel(object):
             'wavelength_m': _wavelength_m,
             'symbol_rate_sym_per_s': _symbol_rate_sym_per_s,
             'bitrate_dbhz': _bitrate_dbhz,
-            'required_bw_hz': _required_bw_hz,
-            'required_bw_dbhz': _required_bw_dbhz,
+            'required_tx_bw_hz': _required_tx_bw_hz,
+            'required_rx_bw_hz': _required_rx_bw_hz,
+            'required_tx_bw_dbhz': _required_tx_bw_dbhz,
+            'required_rx_bw_dbhz': _required_rx_bw_dbhz,
             'allocation_start_hz': _allocation_start_hz,
             'allocation_end_hz': _allocation_end_hz,
             
