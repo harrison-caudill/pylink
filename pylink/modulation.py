@@ -67,35 +67,86 @@ NORMAL_DVBS2X_PERFORMANCE = [
     ]
 
 
-def _modulation_lookup_table(model):
-    retval = {}
-    allocation = model.allocation_hz
-    for code in model.modulation_performance_table:
-        bitrate = allocation * code.tx_eff
-        cn0 = utils.to_db(bitrate) + code.req_demod_ebn0_db()
-        code.req_cn0 = cn0
-        retval[cn0] = code
-    return retval
+def __max_bitrate_hz(cn0_db,
+                     additional_rx_losses_db,
+                     target_margin_db,
+                     required_ebn0_db):
+    cn0 = cn0_db - additional_rx_losses_db - target_margin_db
+    ebn0 = required_ebn0_db
+    return utils.from_db(cn0 - ebn0)
 
 
 def _best_modulation_code(model):
-    table = model.modulation_lookup_table
+    """
+
+    This one is a bit complicated.  This is a circular depenency
+    (yeah, that thing that breaks the whole concept of a DAG).  Well,
+    almost anyway.
+
+    To be more specific, Excess Noise Bandwidth Loss is dependent upon
+    the Required Demodulation Bandwidth.  That bandwidth is dependent
+    upon the Spectral Efficiency, which is dependent upon the Code
+    selection.  So far so goods, no loops.  To select the best code,
+    one must know about the excess noise bandwidth losses and account
+    for that in code selection.
+
+    Yes, this *can* be done analytically, but it turns out to be
+    pretty easy to sweep through all of the options here.
+    Additionally, this method allows us to maintain the quasi-hidden
+    nature of the DAG model.
+
+    Follow this example at your own peril.
+    """
+
+    # This table associates the C/N0 required at the demodulator to
+    # completely fill the available allocation.  If you have a
+    # transmit spectral efficiency of 2bps/hz, and you have 500kHz of
+    # allocation, then you can transmit at no more than 1Mbps.  If
+    # your Eb/N0 is 5, let's say, then you need 65dB of C/N0 to max
+    # out your allocation.  This table associates the filling C/N0
+    table = {}
+    allocation = model.allocation_hz
+    for code in model.modulation_performance_table:
+        bitrate = allocation * code.tx_eff
+        req_cn0 = utils.to_db(bitrate) + code.req_demod_ebn0_db()
+        table[req_cn0] = code
+        code.req_cn0 = req_cn0
+
     keys = table.keys()
     keys.sort()
-    best_option = table[keys[0]]
     e = model.enum
 
+
+    best_option = None
+    best_bitrate = -1
+
+    loop_detection = model.enable_loop_detection
+    model.enable_loop_detection = False
+
     for req_cn0 in keys:
-
         code = table[req_cn0]
+        orig_eff = model.override_value(e.rx_spectral_efficiency_bps_per_hz)
+        model.override(e.best_modulation_code, code)
+        model.override(e.rx_spectral_efficiency_bps_per_hz, code.rx_eff)
 
-        cn0 = (model.cn0_db
-               - model.target_margin_db
-               - model.implementation_loss_db)
-
-        if cn0 >= req_cn0:
+        max_unconstrained = __max_bitrate_hz(model.cn0_db,
+                                             model.additional_rx_losses_db,
+                                             model.target_margin_db,
+                                             code.req_demod_ebn0_db())
+        max_constrained = allocation * code.tx_eff
+        R = min(max_unconstrained, max_constrained)
+                
+        if R > best_bitrate:
             best_option = code
+            best_bitrate = R
 
+        model.revert(e.best_modulation_code)
+        if orig_eff is None:
+            model.revert(e.rx_spectral_efficiency_bps_per_hz)
+        else:
+            model.override(e.rx_spectral_efficiency_bps_per_hz, orig_eff)
+
+    model.enable_loop_detection = loop_detection
     return best_option
 
 
@@ -112,9 +163,10 @@ def _required_demod_ebn0_db(model):
 
 
 def _max_bitrate_hz(model):
-    cn0 = model.cn0_db
-    ebn0 = model.required_ebn0_db
-    
+    return __max_bitrate_hz(model.cn0_db,
+                            model.additional_rx_losses_db,
+                            model.target_margin_db,
+                            model.required_ebn0_db)
 
 
 class Modulation(object):
@@ -124,10 +176,10 @@ class Modulation(object):
         self.tribute = {
             # calculators
             'required_demod_ebn0_db': _required_demod_ebn0_db,
-            'modulation_lookup_table': _modulation_lookup_table,
             'best_modulation_code': _best_modulation_code,
             'tx_spectral_efficiency_bps_per_hz': _tx_spectral_efficiency_bps_per_hz,
             'rx_spectral_efficiency_bps_per_hz': _rx_spectral_efficiency_bps_per_hz,
+            'max_bitrate_hz': _max_bitrate_hz,
 
             # constants
             'modulation_name': name,

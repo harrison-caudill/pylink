@@ -89,6 +89,17 @@ class TestBudget(object):
         m.override(e.pf_dbw_per_m2, -100)
         m.override(e.bitrate_hz,
                    m.tx_spectral_efficiency_bps_per_hz * 40e3)
+
+        # NOTE!!!
+        # We pull some trickery in here when selecting the best
+        # modulation code.  Unfortunately, py.test allow recurision
+        # with state being held in global variables.  Take a look at
+        # the _best_modulation_code method in modulation.py for more
+        # details on what's going on here.  For now, note that we have
+        # to cache the modulation code first so that py.test does not
+        # find a recursive loop.
+        m.best_modulation_code
+
         assert abs(m.pfd_dbw_per_m2_per_4khz - -110) < 1e-6
 
     def test_tx_inline_losses_db(self, model):

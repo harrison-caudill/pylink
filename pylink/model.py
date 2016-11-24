@@ -18,7 +18,10 @@ class LoopException(Exception):
 
 class DAGModel(object):
 
-    def __init__(self, contrib=[], **extras):
+    def __init__(self, contrib=[], enable_loop_detection=True, **extras):
+
+        # FIXME: need details here 
+        self.enable_loop_detection = enable_loop_detection
 
         # calculate the list of node names & enum
         names = []
@@ -97,7 +100,7 @@ class DAGModel(object):
         if node in self._cache:
             return self._cache[node]
         else:
-            if node in self._stack:
+            if node in self._stack and self.enable_loop_detection:
                 stack = self._stack + [node]
                 stack = [self.node_name(n) for n in stack]
                 s = pprint.pformat(stack)

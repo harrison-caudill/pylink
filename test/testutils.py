@@ -29,7 +29,7 @@ def amplifier_10db():
 perf = [
     pylink.Code("BPSK", .5, .5, 4),
     pylink.Code("QPSK", 1, 1, 8),
-    pylink.Code("8PSK", 2, 2, 12),
+    pylink.Code("8PSK", 2, 2, 13),
     ]
 
 
