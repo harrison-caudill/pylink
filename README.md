@@ -139,15 +139,29 @@ need to do the following:
 
  4. Revert the value you are attempting to calculate
 
+ 5. Select the appropriate option by comparing the figure of merit.
+
+ 6. Return the result from your calculator.
+
 For example:
 ```python
 def _cycle_inducement(model):
     e = model.enum
 
+    best_cycle = -1
+    best_option = None
+
     for option in model.cycle_inducement_options: # Step 1
         model.override(e.cycle_inducement, option) # Step 2
         cycle = model.cached_calculate(e.cycle, clear_stack=True) # Step 3
         model.revert(e.cycle_inducement) # Step 4
+
+        # Step 5
+        if cycle > best_cycle:
+            best_cycle = cycle
+            best_option = option
+
+    return best_option # Step 6
 ```
 
 You can also find a unit-test of this behavior in `model_test.py`.
