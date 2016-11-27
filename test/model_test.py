@@ -165,7 +165,6 @@ class TestModel(object):
         m.C
         assert 1 == self._state_c, "C was recalculated"
 
-
     def test_loop_induction(self):
         """Ensures that a loop-inducing calculation can be made
 

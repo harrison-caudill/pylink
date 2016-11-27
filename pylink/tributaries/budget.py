@@ -2,7 +2,7 @@
 
 import math
 
-import utils
+from .. import utils
 
 
 def _tx_eirp_dbw(model):

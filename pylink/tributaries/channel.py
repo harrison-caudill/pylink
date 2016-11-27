@@ -2,7 +2,7 @@
 
 import math
 
-import utils
+from .. import utils
 
 
 def _unity_gain_propagation_loss_db(model):

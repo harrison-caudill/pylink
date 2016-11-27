@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 import math
 
-from model import DAGModel
-import utils
+from ..model import DAGModel
+from .. import utils
 
 
 def _floor(v, n):

@@ -20,6 +20,15 @@ class DAGModel(object):
 
     def __init__(self, contrib=[], **extras):
 
+        # Make sure the input looks sane
+        for t in contrib:
+            try:
+                t.tribute
+            except AttributeError:
+                msg = ("One of your Tributaries doesn't have "
+                       + "'tribute' defined: %s" % t.__class__.__name__)
+                raise AttributeError(msg)
+
         # calculate the list of node names & enum
         names = []
         map(lambda x: names.extend(x.tribute.keys()), contrib)

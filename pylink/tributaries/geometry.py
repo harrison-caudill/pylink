@@ -2,7 +2,7 @@
 
 import math
 
-import utils
+from .. import utils
 
 
 def _mean_orbit_altitude_km(model):

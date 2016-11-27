@@ -15,23 +15,24 @@ __version__ = '0.3'
 __copyright__ = 'Copyright 2016, Spire Global Inc, All Rights Reserved'
 
 
-from antenna import Antenna
-from budget import LinkBudget
-from channel import Channel
 from element import Element
-from geometry import Geometry
-from interconnect import Interconnect
 from model import DAGModel
 from model import LoopException
-from modulation import Code
-from modulation import Modulation
-from receiver import Receiver
 from report import BitrateFigure
 from report import PFDFigure
 from report import Report
 from tagged_attribute import TaggedAttribute
-from transmitter import Transmitter
 from utils import to_db
 from utils import from_db
 from utils import spreading_loss_db
 from utils import pattern_generator
+
+from tributaries.antenna import Antenna
+from tributaries.budget import LinkBudget
+from tributaries.channel import Channel
+from tributaries.geometry import Geometry
+from tributaries.interconnect import Interconnect
+from tributaries.modulation import Code
+from tributaries.modulation import Modulation
+from tributaries.receiver import Receiver
+from tributaries.transmitter import Transmitter

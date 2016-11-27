@@ -1,5 +1,5 @@
-Python Link Budget Calculation & Management
-===========================================
+Python Link Budget Calculation/Management and General Modelling
+===============================================================
 
 This software package is meant to replace the manual-intensive
 spreadsheet method.  This package is intended to permit the following
@@ -11,13 +11,18 @@ major changes in our methodology:
  * Ability to export consistently-formatted PDF link budgets for
    communcation with external agencies.
  
- * Ability to easily produce graphs, such as pfd/4kHz for regulatory
+ * Ability to easily produce graphs, such as pfd/4kHz, for regulatory
    compliance.
 
  * Ability to easily solve for required values within a link budget.
 
  * Ability to tag components with arbitrary values, such as datasheet
    links, descriptions, and part numbers.
+
+ * Creation of more generalized models for calculating whatever you
+   want (see `examples/midlife_crisis.py`).
+
+ * Ease the building of monte-carlo simulations (FIXME: need example).
 
 
 Installation
@@ -35,6 +40,12 @@ See the `examples` directory for example usages as they are easier to
 maintain than a readme.
 
 
+Legacy Support
+==============
+
+Migration instructions from previous versions can be found in the
+[Changelog](CHANGELOG.md).
+
 Extending and Understanding
 ===========================
 
@@ -44,40 +55,34 @@ Submodules
  * `model.py`: Contains the actual DAG Model class that houses the core
                logic of the calculations.
 
- * `utils.py`: Utilities
+ * `utils.py`: Standalone utility functions (such as `to_db`)
 
- * `*.py`: Tributaries.  These each provide boilerplate inputs and
-                         calculators that are common to link budgets.
-                         For example, you're likely to need a
-                         transmitter and a receiver.  There will be a
-                         channel to carry the signal, etc.
+ * `report.py`: Satellite link budget latex report generator.
+
+ * `tagged_attribute.py`: The TaggedAttribute class for adding
+                          metadata tags to individual components.
+
+ * `element.py`: RF Element container.
+
+ * `tributaries/*.py`: These each provide boilerplate inputs and
+                       calculators that are common to link budgets.
+                       For example, you're likely to need a
+                       transmitter and a receiver.  There will be a
+                       channel to carry the signal, etc.
 
 Creating Tributaries
 --------------------
 
 If you just want to add one more computation, or modify one, you can
-do so by including it in the budget itself -- you don't need to create
-your own tributary.  If you do, however, want to create a new one, use
+do so by including it in the model itself -- you don't need to create
+your own tributary.  If, however, you do want to create a new one, use
 the pre-existing source as a guide (it should be pretty clear).  Note
-that you'll need to define the following:
-
- * `tribute`: This should be a dict of node-names to values.  That
-   works both for constants (like `apoapsis_altitude_km` or
-   `speed_of_light_mps`), or for functions that calculate values (like
-   `slant_range_km` or `link_margin_db`).  The budget will expect this
-   value to exist.
-
- * `enum`: An enum for all of the node-names you use in your
-           tributary.  Don't worry about the numbers being mismatched,
-           the budget will map them for you.
-
- * `dependencies`: The budget will incorporate all of the dependencies
-                   you register.  Even if you have external
-                   dependencies, defined in other tributaries, or even
-                   the top-level budget, that's fine.  Just include
-                   them in your enum (be sure they're named the same
-                   thing), and reference them as you would any other
-                   node.
+that you'll need to define the `tribute` instance variable.  This
+should be a dict of node-names to values.  That works both for
+constants (like `apoapsis_altitude_km` or `speed_of_light_m_per_s`),
+and for functions that calculate values (like `slant_range_km` or
+`link_margin_db`).  The DAG Model will expect this value to exist and
+raise an exception otherwise.
 
 Tagging Architecture
 --------------------

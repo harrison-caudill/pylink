@@ -2,8 +2,8 @@
 
 import math
 
-from model import DAGModel
-import utils
+from ..model import DAGModel
+from .. import utils
 
 
 class Interconnect(object):
