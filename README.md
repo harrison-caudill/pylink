@@ -3,7 +3,7 @@ Python Link Budget Calculation/Management and General Modelling
 
 This software package is meant to replace the manual-intensive
 spreadsheet method.  This package is intended to permit the following
-major changes in our methodology:
+major changes in common methodology:
 
  * Use of configuration files on a per (satellite, ground-station,
    radio) basis.
@@ -11,7 +11,7 @@ major changes in our methodology:
  * Ability to export consistently-formatted PDF link budgets for
    communcation with external agencies.
  
- * Ability to easily produce graphs, such as pfd/4kHz, for regulatory
+ * Ability to easily produce graphs, such as pfd/4kHz for regulatory
    compliance.
 
  * Ability to easily solve for required values within a link budget.
@@ -25,19 +25,140 @@ major changes in our methodology:
  * Ease the building of monte-carlo simulations (FIXME: need example).
 
 
+The nature of this package is best described as three things:
+
+1) A caching DAG (Directed Acyclic Graph) Solver.
+
+2) A set of utilities common to link-budgets.
+
+3) A set of pre-defined computational nodes common to link budgets.
+
+If you're looking for a quick-start and/or just want to go with some
+boilerplate examples, take a look at the [Examples](examples/)
+directory.
+
+
+DAG Solver
+----------
+
+Spreadsheets are, for the most part, DAGs.  If you define `C46 = C87 -
+$B$34` then you are, essentially, saying that 3 nodes exist: `C46`,
+`C87`, and `$B$34`.  You are also stating that to solve for node `C46`
+you take the value of node `C87` and subtract the value of node
+`$B$34`.
+
+This system works the same way, except that instead of saying `C46`,
+we might instead say `link_margin_db`.  And instead of coupling our
+presentation and data layers, as in a spreadsheet, we might define it
+as follows:
+
+```python
+def _link_margin_db(model):
+    # Note how we're just referencing things like required_ebn0_db as
+    # instance vars.  No they aren't instance vars, that's just how
+    # you reference nodes in the DAG.
+    return model.received_ebn0_db - model.required_ebn0_db
+
+my_example = pylink.DAGModel(received_ebn0_db=8.0,
+                             required_ebn0_db=6.0,
+                             link_margin_db=_link_margin_db)
+print 'My Example Link Margin: ', my_example.link_margin_db
+```
+
+The DAGModel class overrides python's `__getattr__` method so that you
+can reference nodes directly, without the added syntactic sugar of
+extra parens, brakcets, and tick-marks.
+
+If you're curious what this all looks like in a context other than
+link budgets, take a look at the [Midlife Crisis
+Example](examples/midlife_crisis.py).  There we create a DAGModel that
+has nothing at all to do with RF, satellites, etc.  There's really
+nothing that restricts us to link budgets, or even RF.  Feel free to
+write the nodes and use the framework for whatever you want.
+
+Please note that there are two types of nodes:
+ * Static Nodes
+ * Calculated Nodes
+
+Simply put, static nodes are just plain old values that you pass in,
+whereas calculated nodes are functions/methods/...  You'll see an enum
+referenced all over the place.  That's because it uses node numbers
+internally, and an enum is convenient way to reference node numbers
+without having to use a bunch of single-ticks and brackets.  For example:
+
+```python
+def _link_margin_db(model):
+    return model.received_ebn0_db - model.required_ebn0_db
+
+my_example = pylink.DAGModel(received_ebn0_db=8.0,
+                             required_ebn0_db=6.0,
+                             link_margin_db=_link_margin_db)
+m = my_example # m as in model
+e = m.enum     # e as in enum
+
+print e.link_margin_db
+print m.node_name(e.link_margin_db)
+print m.node_number('link_margin_db') # the alternative to using the enum
+```
+
+It also includes a multi-round linear solver for convenience.  See the
+[Solver Example](examples/solver.py).
+
+
+Utilities
+---------
+
+There are some utilities that are handy for working with RF.  For
+example, there's a function that fakes an antenna gain pattern for
+you: `pylink.pattern_generator`, and another one that calculates the
+attenuation of PFD from spreading over a distance:
+`pylink.spreading_loss_db`.
+
+
+Pre-Defined Nodes
+-----------------
+
+As shown above, new nodes can be registered with the DAG Model directly:
+
+```python
+my_example = pylink.DAGModel(received_ebn0_db=8.0,
+                             required_ebn0_db=6.0,
+                             link_margin_db=_link_margin_db)
+```
+
+Here we've added 3 nodes:
+ * received_ebn0_db
+ * required_ebn0_db
+ * link_margin_db
+
+It frequently makes sense to group nodes before registration.  That's
+where Tributaries come into play.  If you look in the [Basic
+Example](examples/basic.py), you see that it uses a whole list of
+tributaries.  [Geometry](pylink/tributaries/geometry.py) is probably
+the simplest and most straight-forward tributary if you're looking for
+a production example, otherwise please see the [Examples](examples/).
+
+Aside from logical grouping, it also makes sense to reuse code.
+Antennas, for example, have patterns that can be plotted to PNG files
+irrespective of whether they're a transmit or receive antenna.
+Instead of duplicating that code, we simply have a single Antenna
+class that remembers whether it is meant for tx or rx.  When it
+contributes nodes to the DAG, those nodes (instance methods) will be
+able to refer to their object and know whether to use the tx or rx
+path.
+
+
 Installation
 =============
 
  * `python setup.py install -f`
  * `pip install -r requirements.txt`
- * `d=${HOME}/.matplotlib; mkdir -p ${d} ; cd ${d} ; fc-list` matplotlib issue #2919
 
 
-Example Usage
-=============
+Please note that in some cases, matplotlib's conts can be problematic
+(issue #2919).  If that happens, you can fix it with:
 
-See the `examples` directory for example usages as they are easier to
-maintain than a readme.
+```d=${HOME}/.matplotlib; mkdir -p ${d} ; cd ${d} ; fc-list```
 
 
 Legacy Support

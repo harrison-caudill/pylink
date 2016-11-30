@@ -22,7 +22,7 @@ m = pylink.DAGModel([pylink.Geometry(),
                      pylink.Antenna(is_rx=True),
                      pylink.Interconnect(is_rx=True),
                      pylink.Channel(),
-                     pylink.Modulation('GMSK'),
+                     pylink.Modulation('DVB-S2X'),
                      pylink.LinkBudget()],
                     **ex)
 e = m.enum

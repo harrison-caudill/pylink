@@ -205,3 +205,25 @@ class TestModel(object):
     def test_all_nodes(self, model):
         for node in model.nodes():
             model.cached_calculate(node)
+
+    def test_static_revert_error(self):
+        """Ensure a revert of a static node throws an error.
+        """
+
+        m = pylink.DAGModel(A=42)
+        e = m.enum
+
+        assert m.A == 42
+        m.override(e.A, 41)
+        assert m.A == 41
+        with pytest.raises(AttributeError):
+            m.revert(e.A)
+
+    def test_basic_override(self):
+
+        m = pylink.DAGModel(A=42)
+        e = m.enum
+
+        assert m.A == 42
+        m.override(e.A, 41)
+        assert m.A == 41
