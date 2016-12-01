@@ -7,6 +7,37 @@ any Directed Acyclic Graph data model.  The design objective is to
 hide the complexity of calculation in discrete segments all registered
 through a simple central interface.  See the package README for more
 details, the examples directory in the source code for how to use it.
+
+IGNORE THE 'PACKAGE CONTENTS'.  Python is annoying, here's what you
+can look up if you're interested:
+
+=== Tributaries ===
+Antenna
+LinkBudget
+Channel
+Geometry
+Interconnect
+Code
+Modulation
+Receiver
+Transmitter
+
+=== Other Objects ===
+Element
+DAGModel
+LoopException
+BitrateFigure
+PFDFigure
+Report
+TaggedAttribute
+
+=== Utility Functions ===
+to_db
+from_db
+spreading_loss_db
+pattern_generator
+
+
 """
 
 __title__ = 'pylink'

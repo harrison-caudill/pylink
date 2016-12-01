@@ -160,7 +160,7 @@ class Modulation(object):
     most appropriate code option under the circumstances, as well.
     """
 
-    def __init__(self, name='DVB-S2X', perf=NORMAL_DVBS2X_PERFORMANCE):
+    def __init__(self, name='DVB-S2X', perf=None):
         """Create a new modulation tributary
 
         perf=[Code(), Code(), ...]
@@ -168,6 +168,9 @@ class Modulation(object):
         If you don't want to use DVB-S2X, override the performance
         table when creating the modulation object.
         """
+
+        if perf is None:
+            perf = NORMAL_DVBS2X_PERFORMANCE
 
         self.tribute = {
             # calculators
