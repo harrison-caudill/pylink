@@ -153,8 +153,21 @@ def _max_bitrate_hz(model):
 
 
 class Modulation(object):
+    """Modulation tributary
+
+    This is designed to allow for multiple modulation code options
+    (such as found in DVB-S2X.  It includes the logic to solve for the
+    most appropriate code option under the circumstances, as well.
+    """
 
     def __init__(self, name='DVB-S2X', perf=NORMAL_DVBS2X_PERFORMANCE):
+        """Create a new modulation tributary
+
+        perf=[Code(), Code(), ...]
+
+        If you don't want to use DVB-S2X, override the performance
+        table when creating the modulation object.
+        """
 
         self.tribute = {
             # calculators

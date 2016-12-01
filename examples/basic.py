@@ -13,9 +13,12 @@ ex = {
     'wacky_computation': __do_it_do_it_now
     }
 
+tx_power = TA(2,
+              part_number='234x',
+              test_report='http://reports.co/234x')
 
 m = pylink.DAGModel([pylink.Geometry(),
-                     pylink.Transmitter(tx_power_at_pa_dbw=2),
+                     pylink.Transmitter(tx_power_at_pa_dbw=tx_power),
                      pylink.Interconnect(is_rx=False),
                      pylink.Antenna(is_rx=False),
                      pylink.Receiver(),
@@ -41,3 +44,4 @@ print 'Link Margin (dB):        %3g' % m.link_margin_db
 print 'Noise BW Loss (dB):      %-3g' % m.excess_noise_bandwidth_loss_db
 print 'Whimsical Value:         %d' % m.whimsy_coefficient
 print 'Whimsical Info:          %s' % m.get_meta(e.whimsy_coefficient)
+print 'TX Power Test Report:    %s' % m.get_meta(e.tx_power_at_pa_dbw)['test_report']
