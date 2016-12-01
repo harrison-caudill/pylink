@@ -139,13 +139,13 @@ the simplest and most straight-forward tributary if you're looking for
 a production example, otherwise please see the [Examples](examples/).
 
 Aside from logical grouping, it also makes sense to reuse code.
-Antennas, for example, have patterns that can be plotted to PNG files
-irrespective of whether they're a transmit or receive antenna.
-Instead of duplicating that code, we simply have a single Antenna
-class that remembers whether it is meant for tx or rx.  When it
-contributes nodes to the DAG, those nodes (instance methods) will be
-able to refer to their object and know whether to use the tx or rx
-path.
+[Antennas](pylink/tributaries/antenna.py), for example, have patterns
+that can be plotted to PNG files irrespective of whether they're a
+transmit or receive antenna.  Instead of duplicating that code, we
+simply have a single Antenna class that remembers whether it is meant
+for tx or rx.  When it contributes nodes to the DAG, those nodes
+(instance methods) will be able to refer to their object and know
+whether to use the tx or rx path.
 
 
 Installation
