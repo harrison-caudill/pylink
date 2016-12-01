@@ -20,7 +20,7 @@ major changes in common methodology:
    links, descriptions, and part numbers.
 
  * Creation of more generalized models for calculating whatever you
-   want (see `examples/midlife_crisis.py`).
+   want (see the [Midlife Crisis Example](examples/midlife_crisis.py)).
 
  * Ease the building of monte-carlo simulations (FIXME: need example).
 
