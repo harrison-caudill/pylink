@@ -151,8 +151,8 @@ whether to use the tx or rx path.
 Installation
 =============
 
- * `python setup.py install -f`
  * `pip install -r requirements.txt`
+ * `python setup.py install -f`
 
 
 Please note that in some cases, matplotlib's fonts can be problematic
