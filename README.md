@@ -155,7 +155,7 @@ Installation
  * `pip install -r requirements.txt`
 
 
-Please note that in some cases, matplotlib's conts can be problematic
+Please note that in some cases, matplotlib's fonts can be problematic
 (issue #2919).  If that happens, you can fix it with:
 
 ```d=${HOME}/.matplotlib; mkdir -p ${d} ; cd ${d} ; fc-list```
