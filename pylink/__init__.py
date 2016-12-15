@@ -67,3 +67,10 @@ from tributaries.modulation import Code
 from tributaries.modulation import Modulation
 from tributaries.receiver import Receiver
 from tributaries.transmitter import Transmitter
+
+from variate import GeneralVariate
+from variate import IndependentBinomialVariate
+from variate import IndependentCustomPMFVariate
+from variate import IndependentNormalVariate
+from variate import MarkovVariate
+from variate import DependentNormalVariate

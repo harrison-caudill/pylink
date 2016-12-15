@@ -7,9 +7,10 @@ import pprint
 import re
 import sys
 import traceback
-import utils
 
 from tagged_attribute import TaggedAttribute
+import utils
+from variate import Variate
 
 
 class LoopException(Exception):
@@ -60,6 +61,7 @@ class DAGModel(object):
         self._calc = {}
         self._values = {}
         self._meta = {}
+        self._variates = {}
         tributes = [m.tribute for m in contrib]
         tributes.append(extras)
         for t in tributes:
@@ -68,6 +70,10 @@ class DAGModel(object):
                 if hasattr(v, '__call__'):
                     self._calc[node] = v
                 elif isinstance(v, TaggedAttribute):
+                    self._meta[node] = v.meta
+                    self._values[node] = v.value
+                elif isinstance(v, Variate):
+                    self._variates[node] = v
                     self._meta[node] = v.meta
                     self._values[node] = v.value
                 else:
@@ -372,3 +378,14 @@ class DAGModel(object):
 
     def nodes(self):
         return self._names.keys()
+
+    def evolve(self, n=1):
+        """Evolves the model by n steps.
+
+        This routine executes all of the registered time-evolution
+        functions, storing the new values for you.
+        """
+
+        for i in range(n):
+            for node, variate in self._variates.iteritems():
+                self.override(node, variate.evolve(self))
