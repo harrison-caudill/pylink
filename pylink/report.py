@@ -14,6 +14,18 @@ import utils
 
 
 class PFDFigure(object):
+    """Power Flux Density figure object
+
+    This object is designed to allow you to easily generate figures
+    for PF(D) figures.  It spans several use-cases:
+
+     * PF vs elevation angle
+     * PFD vs elevation angle at a specified BW
+     * Peak PFD vs BW for a given range
+     * Some can be either at GSO or at the receiver
+
+    It works for uplinks and downlinks.
+    """
 
     def _plot_peak_pfd(self):
         m = self.model
@@ -130,7 +142,7 @@ class PFDFigure(object):
         ''' % (self.caption(), self.fname(), self.label())
 
     def __init__(self,
-                 budget,
+                 model,
                  dname='.',
                  is_bw=True,
                  start_hz=0,
@@ -138,12 +150,24 @@ class PFDFigure(object):
                  end_hz=4e3,
                  is_gso=False,
                  pfd_limits=None):
+        """Creates a new figure.
+
+        model -- The DAG model.
+        dname -- The directory in which to place the generated images
+        is_bw -- Is the figure to be PFD vs BW
+        start_hz -- If so, starting BW
+        end_hz -- And the ending BW
+        bw -- If it is PFD vs elevation, it will be at this BW.
+        is_gso -- True if looking at PFD at GSO, otherwise it is the receiver
+        pfd_limits -- If it is PFD vs elevation, also plot these PFD limits
+        """
+
         self.dname = dname
         self.is_bw = is_bw
         self.start_hz = start_hz
         self.end_hz = end_hz
         self.is_gso = is_gso
-        self.budget = budget
+        self.budget = model
         self.model = budget.model
         self.enum = self.model.enum
         self.pfd_limits = pfd_limits
@@ -151,6 +175,8 @@ class PFDFigure(object):
 
 
 class BitrateFigure(object):
+    """[BROKEN] Max bitrate figure.
+    """
 
     def plot(self):
         m = self.model
@@ -251,6 +277,12 @@ class BitrateFigure(object):
 
 
 class Report(object):
+    """LaTeX report Generator.
+
+    Generates latex reports with great extensibility for either
+    general engineering, or compliance reports for people like
+    NOAA/NASA/FCC/ITU/ESA/TLA/ETLA.
+    """
 
     def __init__(self, model):
         self.model = model
@@ -397,6 +429,33 @@ class Report(object):
                  added_interference_sections=[],
                  bitrate_figure=None,
                  watermark_text=None):
+        """Export the budget to LaTeX
+
+        fname -- Top level latex path
+        author -- The author's name/entry in the header
+        intro -- An optional section of latex to be included after the title
+        expo -- An optional section of latex to be included at the end
+        rx_pfd_bws -- List of PFD BW's to include in the interference section
+        gso_pfd_bws -- List of PFD BW's to include in the interference section
+        added_sections -- Additional sections to add before the budget section
+        added_iterference_sections -- Additional subsections for interference
+        pfd_figures -- Any desired PFD figure objects
+        bitrate_figure -- Any desired bitrate figure objects
+        watermark_text -- Watermark text (such as DRAFT or CONFIDENTIAL)
+
+        Interference Subsections:
+        [('Subsection Title', [
+            ('Item Name', item_value, 'units'),
+            ('Another Item Name', another_value, 'units'),
+          ]),]
+
+        Additional Sections:
+        [('Section Name', [
+            subsection,
+            subsection,
+          ]),]
+        """
+        
         m = self.model
         e = self.model.enum
 
@@ -484,12 +543,13 @@ class Report(object):
                 ]),
 
             ('Modulation (%s)' % m.modulation_name, [
+                ('Modulation Name', m.modulation_name, ''),
+                ('Modulation Code', m.best_modulation_code.name, ''),
                 self._humanize_hz('Bitrate', m.bitrate_hz),
                 ('Bitrate', m.bitrate_dbhz, 'dBHz'),
-                self._humanize_hz('Symbol Rate', m.symbol_rate_sym_per_s),
                 ('Required Demodulation $E_b/N_0$', m.required_demod_ebn0_db, 'dB'),
-                self._humanize_hz('Required Bandwidth', m.required_bw_hz),
-                ('Required Bandwidth', m.required_bw_dbhz, 'dBHz'),
+                self._humanize_hz('Required Demod Bandwidth', m.required_rx_bw_hz),
+                ('Required Demod Bandwidth', m.required_rx_bw_dbhz, 'dBHz'),
                 ]),
             ])
 
@@ -526,7 +586,7 @@ class Report(object):
                 self._humanize_hz('Center Frequency', m.center_freq_hz),
                 ('Free Space Loss', m.unity_gain_propagation_loss_db, 'dB'),
                 ('Total Channel Loss', m.total_channel_loss_db, 'dB'),
-                ('Occupied Bandwidth', m.required_bw_dbhz, 'dBHz'),
+                ('Occupied Bandwidth', m.required_tx_bw_dbhz, 'dBHz'),
                 ]),
 
             ('Receiver', [

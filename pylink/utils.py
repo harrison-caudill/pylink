@@ -6,11 +6,21 @@ import numpy as np
 
 
 def sequential_enum(*sequential, **named):
+    """Returns a new enum with all given named and sequential nodes.
+
+    sequential -- [str, str, ...]
+    named -- str:int
+    """
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
 
 
 def node_associations(enum):
+    """Returns dicts associating nodes -> names and vice versa from an enum.
+
+    Given an enum, returns the dict of names to numbers and numbers to
+    names.
+    """
     node_to_name = {}
     name_to_node = {}
     for key, value, in enum.__dict__.iteritems():
@@ -21,14 +31,20 @@ def node_associations(enum):
 
 
 def to_db(v):
+    """linear to dB
+    """
     return math.log(float(v), 10) * 10
 
 
 def from_db(v):
+    """dB to linear
+    """
     return 10**(float(v)/10.0)
 
 
 def human_hz(v):
+    """Returns a number of Hz autoselected for Hz, kHz, MHz, and GHz
+    """
     if v < 1e3:
         return (v, 'Hz')
     if v < 1e6:
@@ -39,6 +55,8 @@ def human_hz(v):
 
 
 def human_m(v):
+    """Returns a distance autoselected for mm, cm, m, and km
+    """
     if v < 1e-2:
         return (v*1.0e3, 'mm')
     if v < 1:
@@ -48,17 +66,25 @@ def human_m(v):
     return (v/1.0e3, 'km')
 
 
-def breakout_metadata(v):
-    if isinstance(v, TaggedAttribute):
-        return (v.value, v.meta)
-    return (v, {})
-
-
 def spreading_loss_db(dist_km):
+    """Returns the loss, in dB, associated with distance alone.
+    """
     return to_db(4 * math.pi * (dist_km * 1000)**2)
 
 
 def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
+    """Generates a sample antenna pattern.
+
+    The pattern will be a main lobe, and the rest will be the <null>
+    value.
+
+    FIXME: See if a reasonable pattern, including side-lobes, can be
+           generated easily
+
+    peak_gain_dbi -- float
+    null -- float, value outside of the main lobe
+    eff -- float, antenna efficiency value
+    """
     gain = peak_gain_dbi # just want it called peak_gain_dbi in docs
 
     # http://www.phys.hawaii.edu/~anita/new/papers/militaryHandbook/antennas.pdf

@@ -58,7 +58,7 @@ class TestBudget(object):
         e = model.enum
         m = model
         m.override(e.rx_noise_bw_hz, 1e6)
-        m.override(e.required_bw_hz, 1e5)
+        m.override(e.required_rx_bw_hz, 1e5)
         assert abs(m.excess_noise_bandwidth_loss_db - 10) < 1e-6
 
     def test_rx_eb(self, model):
@@ -78,17 +78,32 @@ class TestBudget(object):
     def test_link_margin_db(self, model):
         e = model.enum
         m = model
-        req_ebn0 = m.required_ebn0_db
         m.override(e.rx_ebn0_db, 50)
-        m.override(e.excess_noise_bandwidth_loss_db, 10)
-        assert abs(m.link_margin_db - (40 - req_ebn0)) < 1e-4
+        m.override(e.required_ebn0_db, 10)
+        assert abs(m.link_margin_db - 40) < 1e-4
 
     def test_pfd_dbw_per_m2_per_4khz(self, model):
         e = model.enum
         m = model
         m.override(e.pf_dbw_per_m2, -100)
         m.override(e.bitrate_hz,
-                   m.spectral_efficiency_bps_per_hz * 40e3)
+                   m.tx_spectral_efficiency_bps_per_hz * 40e3)
+
+        print m.tx_spectral_efficiency_bps_per_hz
+        print m.rx_spectral_efficiency_bps_per_hz
+        print m.bitrate_hz
+        print m.required_rx_bw_hz
+
+        # NOTE!!!
+        # We pull some trickery in here when selecting the best
+        # modulation code.  Unfortunately, py.test allow recurision
+        # with state being held in global variables.  Take a look at
+        # the _best_modulation_code method in modulation.py for more
+        # details on what's going on here.  For now, note that we have
+        # to cache the modulation code first so that py.test does not
+        # find a recursive loop.
+        m.best_modulation_code
+
         assert abs(m.pfd_dbw_per_m2_per_4khz - -110) < 1e-6
 
     def test_tx_inline_losses_db(self, model):

@@ -2,7 +2,7 @@
 
 import math
 
-import utils
+from .. import utils
 
 
 class Transmitter(object):

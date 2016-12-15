@@ -2,8 +2,8 @@
 
 import math
 
-import utils
-import element
+from .. import utils
+from .. import element
 
 
 def _rx_noise_temp_k(model):

@@ -2,7 +2,7 @@
 
 import math
 
-import utils
+from .. import utils
 
 
 def _tx_eirp_dbw(model):
@@ -84,43 +84,52 @@ def _peak_pf_at_geo_dbw_per_m2(model):
     return (model.peak_tx_eirp_dbw - spreading)
 
 
-def _to_hz(model, v):
-    return v - utils.to_db(model.required_bw_hz)
+def _to_tx_hz(model, v):
+    return v - utils.to_db(model.required_tx_bw_hz)
+
+
+def _to_rx_hz(model, v):
+    return v - utils.to_db(model.required_rx_bw_hz)
 
 
 def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.peak_pf_at_geo_dbw_per_m2)
+    return _to_rx_hz(model, model.peak_pf_at_geo_dbw_per_m2)
 
 
 def _compliance_pfd_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.compliance_pf_dbw_per_m2)
+    return _to_rx_hz(model, model.compliance_pf_dbw_per_m2)
 
 
 def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.peak_pf_at_geo_dbw_per_m2)
+    return _to_rx_hz(model, model.peak_pf_at_geo_dbw_per_m2)
 
 
 def _peak_pfd_at_geo_dbw_per_m2_per_4khz(model):
-    return _to_n_hz(model, model.peak_pfd_at_geo_dbw_per_m2_per_hz, 4e3)
+    return _to_n_rx_hz(model, model.peak_pfd_at_geo_dbw_per_m2_per_hz, 4e3)
 
 
 def _pfd_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.pf_dbw_per_m2)
+    return _to_rx_hz(model, model.pf_dbw_per_m2)
 
-def _to_n_hz(model, base, n):
-    return (base + utils.to_db(min(model.required_bw_hz, n)))
+
+def _to_n_tx_hz(model, base, n):
+    return (base + utils.to_db(min(model.required_tx_bw_hz, n)))
+
+
+def _to_n_rx_hz(model, base, n):
+    return (base + utils.to_db(min(model.required_rx_bw_hz, n)))
 
 
 def _pfd_dbw_per_m2_per_4khz(model):
-    return _to_n_hz(model, model.pfd_dbw_per_m2_per_hz, 4e3)
+    return _to_n_rx_hz(model, model.pfd_dbw_per_m2_per_hz, 4e3)
 
 
 def _peak_pfd_dbw_per_m2_per_hz(model):
-    return _to_hz(model, model.peak_pf_dbw_per_m2)
+    return _to_rx_hz(model, model.peak_pf_dbw_per_m2)
 
 
 def _peak_pfd_dbw_per_m2_per_4khz(model):
-    return _to_n_hz(model, model.peak_pfd_dbw_per_m2_per_hz, 4e3)
+    return _to_n_rx_hz(model, model.peak_pfd_dbw_per_m2_per_hz, 4e3)
 
 
 def _rx_power_dbw(model):
@@ -150,7 +159,7 @@ def _cn0_db(model):
 
 
 def _excess_noise_bandwidth_loss_db(model):
-    req_bw = model.required_bw_dbhz
+    req_bw = model.required_rx_bw_dbhz
     noise_bw = utils.to_db(model.rx_noise_bw_hz) if model.rx_noise_bw_hz else req_bw
     return noise_bw - req_bw
 
@@ -163,10 +172,14 @@ def _rx_ebn0_db(model):
     return model.rx_eb - model.rx_n0_dbw_per_hz
 
 
+def _additional_rx_losses_db(model):
+    return (model.implementation_loss_db
+            + model.excess_noise_bandwidth_loss_db)
+
+
 def _required_ebn0_db(model):
-            return (model.required_demod_ebn0_db
-                    + model.implementation_loss_db
-                    + model.excess_noise_bandwidth_loss_db)
+    return (model.required_demod_ebn0_db
+            + model.additional_rx_losses_db)
 
 
 def _link_margin_db(model):
@@ -178,7 +191,8 @@ class LinkBudget(object):
     def __init__(self,
                  name='Link Budget',
                  is_downlink=True,
-                 rx_antenna_noise_temp_k=300):
+                 rx_antenna_noise_temp_k=300,
+                 target_margin_db=1.0):
 
         self.tribute = {
             # calculators
@@ -211,6 +225,8 @@ class LinkBudget(object):
             'tx_eirp_dbw': _tx_eirp_dbw,
             'peak_tx_eirp_dbw': _peak_tx_eirp_dbw,
             'required_ebn0_db': _required_ebn0_db,
+            'additional_rx_losses_db': _additional_rx_losses_db,
+            'peak_pfd_dbw_per_m2_per_hz': _peak_pfd_dbw_per_m2_per_hz,
 
             # constants
             'budget_name': name,
@@ -218,4 +234,5 @@ class LinkBudget(object):
             'boltzmann_J_per_K_db': utils.to_db(1.3806488e-23),
             'is_downlink': is_downlink,
             'rx_antenna_noise_temp_k': rx_antenna_noise_temp_k,
+            'target_margin_db': target_margin_db,
             }
