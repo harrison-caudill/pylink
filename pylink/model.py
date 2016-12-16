@@ -7,6 +7,7 @@ import pprint
 import re
 import sys
 import traceback
+import numpy as np
 
 from tagged_attribute import TaggedAttribute
 import utils
@@ -26,7 +27,7 @@ class DAGModel(object):
     override values.
     """
 
-    def __init__(self, contrib=[], **extras):
+    def __init__(self, contrib=[], seed=None, **extras):
         """Creates a new DAG Model
 
         contrib -- Iterable of tributaries
@@ -75,7 +76,6 @@ class DAGModel(object):
                 elif isinstance(v, Variate):
                     self._variates[node] = v
                     self._meta[node] = v.meta
-                    self._values[node] = v.value
                 else:
                     self._values[node] = v
 
@@ -87,6 +87,40 @@ class DAGModel(object):
         # We start with an empty dependency tree and update as able
         self._deps = {}
         self._map_dependencies()
+
+        # Seed the random number generator
+        self.seed(seed)
+
+        # Now that we're up and running, let's do the in-situ
+        # initialization of the variates
+        self._init_variates()
+
+    def _init_variates(self):
+        for n, v in self._variates.iteritems():
+            v.init_first_value(self)
+
+    def seed(self, seed=None):
+        """Seeds the GLOBAL random number generator.
+
+        Yikes...I don't like this, but I don't know of a better way.
+        Initially, I created a RandomState object, but it ended up
+        being an order of magnitude more expensive to create a
+        RandomState object than it was to play a simulation forward
+        for 24 steps.  This sorta-kinda-works because it relies upon
+        the way that the multiprocessing pool splits up multiple
+        processes not just multiple threads allowing us to bypass the
+        GIL and, in this case, the global random state.
+        """
+        #self._random = np.random.RandomState()
+        np.random.seed(seed)
+
+    def random(self):
+        """Retreives the model's random number generator.
+
+        It's a numpy RandomState object.
+        """
+        #return self._random
+        return np.random
 
     def get_meta(self, node):
         """Returns the metadata dict associated with this node
@@ -176,7 +210,6 @@ class DAGModel(object):
             self._stack = orig_stack
         return retval
 
-
     def _calculate(self, node, stack=None):
 
         if stack:
@@ -193,6 +226,8 @@ class DAGModel(object):
 
         if node in self._values:
             retval = self._values[node]
+        elif node in self._variates:
+            retval = self._variates[node].value
         else:
             retval = self._calc[node](self)
 
@@ -223,14 +258,13 @@ class DAGModel(object):
         self._cache[node] = value
 
     def __getattr__(self, name):
-        if name in self._nodes:
+        try:
             node = self.node_num(name)
-            if node not in self._values and node not in self._calc:
-                name = self.node_name(node)
-                msg = "It looks like you're missing an item: %s" % name
-                raise AttributeError(msg)
             return self.cached_calculate(node)
-        raise AttributeError("It looks like you're missing a node: %s" % name)
+        except KeyError:
+            name = self.node_name(node)
+            msg = "It looks like you're missing a node: %s" % name
+            raise AttributeError(msg)
 
     def _client_list(self, flat_deps):
         retval = {}

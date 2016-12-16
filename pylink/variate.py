@@ -5,12 +5,28 @@ import numpy as np
 
 class Variate(object):
 
-    def __init__(self, initial_value, **meta):
-        self.value = initial_value
+    def __init__(self, init_value=None, **meta):
+        self._value = init_value
         self.meta = meta
-        self.history = [initial_value]
+        self.history = []
+        self.value = init_value
+
+    def init_first_value(self, model):
+        """Initializes the first value of the variate with full context.
+
+        Some of the variates are dependent upon the model, which
+        doesn't exist until after all of the variates are
+        created/inititialized.  Doing it this way allows us to avoid a
+        branch and a function call when referencing a variate's value.
+        """
+        if self.value is None:
+            self.evolve(model)
+        else:
+            self.history.append(self.value)
 
     def evolve(self, model):
+        """Updates to a new value of the variate.
+        """
         retval = self._evolve(model)
         self.history.append(retval)
         self.value = retval
@@ -19,8 +35,8 @@ class Variate(object):
 
 class GeneralVariate(Variate):
 
-    def __init__(self, initial_value, evolve, **meta):
-        super(GeneralVariate, self).__init__(initial_value, **meta)
+    def __init__(self, evolve, init_value=None, **meta):
+        super(GeneralVariate, self).__init__(init_value=init_value, **meta)
         self.evolve_func = evolve
 
     def _evolve(self, model):
@@ -32,17 +48,16 @@ class IndependentNormalVariate(Variate):
     def __init__(self, mu, sigma, **meta):
         self.mu = mu
         self.sigma = sigma
-        init = np.random.normal(loc=self.mu, scale=self.sigma)
-        super(IndependentNormalVariate, self).__init__(init, **meta)
+        super(IndependentNormalVariate, self).__init__(**meta)
 
     def _evolve(self, model):
-        return np.random.normal(loc=self.mu, scale=self.sigma)
+        return model.random().normal(loc=self.mu, scale=self.sigma)
 
 
 class MarkovVariate(Variate):
 
-    def __init__(self, initial_value, evolve, opt=None, **meta):
-        super(MarkovVariate, self).__init__(initial_value, **meta)
+    def __init__(self, evolve, opt=None, **meta):
+        super(MarkovVariate, self).__init__(**meta)
         self.evolve_func = evolve
         self.opt = opt
 
@@ -61,11 +76,10 @@ class IndependentCustomPMFVariate(Variate):
             for k in range(int(round(pmf[i] * n, 0))):
                 self.rand[k] = i
 
-        init_val = np.random.choice(self.rand)
-        super(IndependentCustomPMFVariate, self).__init__(init_val, **meta)
+        super(IndependentCustomPMFVariate, self).__init__(**meta)
 
     def _evolve(self, model):
-        return np.random.choice(self.rand)
+        return model.random().choice(self.rand)
 
 
 class IndependentBinomialVariate(Variate):
@@ -74,20 +88,19 @@ class IndependentBinomialVariate(Variate):
         self.n = n
         self.p = p
 
-        init_val = np.random.binomial(self.n, self.p)
-        super(IndependentBinomialVariate, self).__init__(init_val, **meta)
+        super(IndependentBinomialVariate, self).__init__(**meta)
 
     def _evolve(self, model):
-        return np.random.binomial(self.n, self.p)
+        return model.random().binomial(self.n, self.p)
 
 class DependentNormalVariate(Variate):
 
-    def __init__(self, initial_value, mu, sigma, **meta):
+    def __init__(self, mu, sigma, **meta):
         self.mu = mu
         self.sigma = sigma
-        super(DependentNormalVariate, self).__init__(initial_value, **meta)
+        super(DependentNormalVariate, self).__init__(**meta)
 
     def _evolve(self, model):
         mu = model.cached_calculate(model.node_num(self.mu))
         sigma = model.cached_calculate(model.node_num(self.sigma))
-        return np.random.normal(loc=mu, scale=sigma)
+        return model.random().normal(loc=mu, scale=sigma)
