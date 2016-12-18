@@ -88,16 +88,12 @@ class DAGModel(object):
         self._deps = {}
         self._map_dependencies()
 
+        # Register the model with the variates
+        for n, v in self._variates.iteritems():
+            v.model_init(self)
+
         # Seed the random number generator
         self.seed(seed)
-
-        # Now that we're up and running, let's do the in-situ
-        # initialization of the variates
-        self._init_variates()
-
-    def _init_variates(self):
-        for n, v in self._variates.iteritems():
-            v.init_first_value(self)
 
     def seed(self, seed=None):
         """Seeds the GLOBAL random number generator.

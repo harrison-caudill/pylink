@@ -3,26 +3,25 @@
 import math
 import numpy as np
 
+
 class Variate(object):
 
-    def __init__(self, init_value=None, **meta):
+    def __init__(self, init_value, **meta):
         self._value = init_value
         self.meta = meta
-        self.history = []
         self.value = init_value
+        self.history = [self.value]
+        self._post_model_hook = None
 
-    def init_first_value(self, model):
-        """Initializes the first value of the variate with full context.
+    def model_init(self, model):
+        """Registers the DAGModel.
 
-        Some of the variates are dependent upon the model, which
-        doesn't exist until after all of the variates are
-        created/inititialized.  Doing it this way allows us to avoid a
-        branch and a function call when referencing a variate's value.
+        This is done so that things like node numbers can be cached.
+        The Model is expected to be complete, and all the variates
+        registered, though the ordering of these calls is undefined.
         """
-        if self.value is None:
-            self.evolve(model)
-        else:
-            self.history.append(self.value)
+        if self._post_model_hook:
+            self._post_model_hook(model)
 
     def evolve(self, model):
         """Updates to a new value of the variate.
@@ -35,8 +34,8 @@ class Variate(object):
 
 class GeneralVariate(Variate):
 
-    def __init__(self, evolve, init_value=None, **meta):
-        super(GeneralVariate, self).__init__(init_value=init_value, **meta)
+    def __init__(self, init_value, evolve, **meta):
+        super(GeneralVariate, self).__init__(init_value, **meta)
         self.evolve_func = evolve
 
     def _evolve(self, model):
@@ -45,10 +44,10 @@ class GeneralVariate(Variate):
 
 class IndependentNormalVariate(Variate):
 
-    def __init__(self, mu, sigma, **meta):
+    def __init__(self, init_value, mu, sigma, **meta):
         self.mu = mu
         self.sigma = sigma
-        super(IndependentNormalVariate, self).__init__(**meta)
+        super(IndependentNormalVariate, self).__init__(init_value, **meta)
 
     def _evolve(self, model):
         return model.random().normal(loc=self.mu, scale=self.sigma)
@@ -56,8 +55,8 @@ class IndependentNormalVariate(Variate):
 
 class MarkovVariate(Variate):
 
-    def __init__(self, evolve, opt=None, **meta):
-        super(MarkovVariate, self).__init__(**meta)
+    def __init__(self, init_value, evolve, opt=None, **meta):
+        super(MarkovVariate, self).__init__(init_value, **meta)
         self.evolve_func = evolve
         self.opt = opt
 
@@ -67,7 +66,7 @@ class MarkovVariate(Variate):
 
 class IndependentCustomPMFVariate(Variate):
 
-    def __init__(self, pmf, **meta):
+    def __init__(self, init_value, pmf, **meta):
         # at least 10 samples per bucket
         n = 10 * 1.0 / min(pmf)
         self.rand = numpy.zeros(n)
@@ -76,7 +75,7 @@ class IndependentCustomPMFVariate(Variate):
             for k in range(int(round(pmf[i] * n, 0))):
                 self.rand[k] = i
 
-        super(IndependentCustomPMFVariate, self).__init__(**meta)
+        super(IndependentCustomPMFVariate, self).__init__(init_value, **meta)
 
     def _evolve(self, model):
         return model.random().choice(self.rand)
@@ -84,23 +83,29 @@ class IndependentCustomPMFVariate(Variate):
 
 class IndependentBinomialVariate(Variate):
 
-    def __init__(self, n, p, **meta):
+    def __init__(self, init_value, n, p, **meta):
         self.n = n
         self.p = p
 
-        super(IndependentBinomialVariate, self).__init__(**meta)
+        super(IndependentBinomialVariate, self).__init__(init_value, **meta)
 
     def _evolve(self, model):
         return model.random().binomial(self.n, self.p)
 
+
 class DependentNormalVariate(Variate):
 
-    def __init__(self, mu, sigma, **meta):
+    def __init__(self, init_value, mu, sigma, **meta):
         self.mu = mu
         self.sigma = sigma
-        super(DependentNormalVariate, self).__init__(**meta)
+        super(DependentNormalVariate, self).__init__(init_value, **meta)
+        self._post_model_hook = self.__post_model_hook
+
+    def __post_model_hook(self, model):
+        self.mu = model.node_num(self.mu)
+        self.sigma = model.node_num(self.sigma)
 
     def _evolve(self, model):
-        mu = model.cached_calculate(model.node_num(self.mu))
-        sigma = model.cached_calculate(model.node_num(self.sigma))
+        mu = model.cached_calculate(self.mu)
+        sigma = model.cached_calculate(self.sigma)
         return model.random().normal(loc=mu, scale=sigma)
