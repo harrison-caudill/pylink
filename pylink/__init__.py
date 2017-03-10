@@ -27,7 +27,7 @@ Element
 DAGModel
 LoopException
 BitrateFigure
-PFDFigure
+CanonicalPFDFigure
 Report
 TaggedAttribute
 
@@ -50,7 +50,10 @@ from element import Element
 from model import DAGModel
 from model import LoopException
 from report import BitrateFigure
-from report import PFDFigure
+from report import CanonicalPFDFigure
+from report import ExpectedPFDFigure
+from report import PFDvsBWFigure
+from report import BitrateFigure
 from report import Report
 from tagged_attribute import TaggedAttribute
 from utils import to_db

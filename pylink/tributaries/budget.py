@@ -41,12 +41,16 @@ def _pf_dbw_per_m2(model):
             - model.rain_loss_db)
 
 
-def _compliance_pf_dbw_per_m2(model):
+def _pfd_dbw_per_m2_per_hz(model):
+    return utils.rx_pfd_hz_adjust(model, model.pf_dbw_per_m2, 1)
+
+
+def _canonical_pf_dbw_per_m2(model):
     # this one is here for compliance.  We want to show that under
     # maximum power flux conditions, we can meet our pfd limitations.
     # We ignore things like atmospheric loss and antenna pattern, but
     # we do count slant range.
-    spreading = utils.spreading_loss_db(model.periapsis_slant_range_km)
+    spreading = utils.spreading_loss_db(model.slant_range_km)
     return (model.peak_tx_eirp_dbw - spreading)
 
 
@@ -69,6 +73,12 @@ def _peak_pf_dbw_per_m2(model):
     return (eirp - spreading)
 
 
+def _peak_pfd_dbw_per_m2_per_hz(model):
+    return utils.pfd_hz_manual_adjust(model.peak_pf_dbw_per_m2,
+                                      model.allocation_hz,
+                                      1)
+
+
 def _range_to_geo_km(model):
     return model.geo_altitude_km - model.apoapsis_altitude_km
 
@@ -84,52 +94,10 @@ def _peak_pf_at_geo_dbw_per_m2(model):
     return (model.peak_tx_eirp_dbw - spreading)
 
 
-def _to_tx_hz(model, v):
-    return v - utils.to_db(model.required_tx_bw_hz)
-
-
-def _to_rx_hz(model, v):
-    return v - utils.to_db(model.required_rx_bw_hz)
-
-
 def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
-    return _to_rx_hz(model, model.peak_pf_at_geo_dbw_per_m2)
-
-
-def _compliance_pfd_dbw_per_m2_per_hz(model):
-    return _to_rx_hz(model, model.compliance_pf_dbw_per_m2)
-
-
-def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
-    return _to_rx_hz(model, model.peak_pf_at_geo_dbw_per_m2)
-
-
-def _peak_pfd_at_geo_dbw_per_m2_per_4khz(model):
-    return _to_n_rx_hz(model, model.peak_pfd_at_geo_dbw_per_m2_per_hz, 4e3)
-
-
-def _pfd_dbw_per_m2_per_hz(model):
-    return _to_rx_hz(model, model.pf_dbw_per_m2)
-
-
-def _to_n_tx_hz(model, base, n):
-    return (base + utils.to_db(min(model.required_tx_bw_hz, n)))
-
-
-def _to_n_rx_hz(model, base, n):
-    return (base + utils.to_db(min(model.required_rx_bw_hz, n)))
-
-
-def _pfd_dbw_per_m2_per_4khz(model):
-    return _to_n_rx_hz(model, model.pfd_dbw_per_m2_per_hz, 4e3)
-
-
-def _peak_pfd_dbw_per_m2_per_hz(model):
-    return _to_rx_hz(model, model.peak_pf_dbw_per_m2)
-
-
-def _peak_pfd_dbw_per_m2_per_4khz(model):
-    return _to_n_rx_hz(model, model.peak_pfd_dbw_per_m2_per_hz, 4e3)
+    return utils.pfd_hz_manual_adjust(model.peak_pf_at_geo_dbw_per_m2,
+                                      model.allocation_hz,
+                                      1)
 
 
 def _rx_power_dbw(model):
@@ -197,7 +165,6 @@ class LinkBudget(object):
         self.tribute = {
             # calculators
             'pf_dbw_per_m2': _pf_dbw_per_m2,
-            'compliance_pfd_dbw_per_m2_per_hz': _compliance_pfd_dbw_per_m2_per_hz,
             'peak_pfd_at_geo_dbw_per_m2_per_hz': _peak_pfd_at_geo_dbw_per_m2_per_hz,
             'rx_power_dbw': _rx_power_dbw,
             'rx_antenna_effective_area_dbm2': _rx_antenna_effective_area_dbm2,
@@ -205,7 +172,6 @@ class LinkBudget(object):
             'rx_n0_dbw_per_hz': _rx_n0_dbw_per_hz,
             'cn0_db': _cn0_db,
             'excess_noise_bandwidth_loss_db': _excess_noise_bandwidth_loss_db,
-            'pfd_dbw_per_m2_per_4khz': _pfd_dbw_per_m2_per_4khz,
             'pfd_dbw_per_m2_per_hz': _pfd_dbw_per_m2_per_hz,
             'rx_eb': _rx_eb,
             'rx_ebn0_db': _rx_ebn0_db,
@@ -214,10 +180,8 @@ class LinkBudget(object):
             'boltzmann_J_per_K': 1.3806488e-23,
             'boltzmann_J_per_K_db': utils.to_db(1.3806488e-23),
             'peak_pf_at_geo_dbw_per_m2': _peak_pf_at_geo_dbw_per_m2,
-            'peak_pfd_at_geo_dbw_per_m2_per_4khz': _peak_pfd_at_geo_dbw_per_m2_per_4khz,
             'peak_pf_dbw_per_m2': _peak_pf_dbw_per_m2,
-            'peak_pfd_dbw_per_m2_per_4khz': _peak_pfd_dbw_per_m2_per_4khz,
-            'compliance_pf_dbw_per_m2': _compliance_pf_dbw_per_m2,
+            'canonical_pf_dbw_per_m2': _canonical_pf_dbw_per_m2,
             'range_to_geo_km': _range_to_geo_km,
             'rx_rf_chain': _rx_rf_chain,
             'tx_inline_losses_db': _tx_inline_losses_db,

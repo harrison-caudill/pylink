@@ -72,6 +72,30 @@ def spreading_loss_db(dist_km):
     return to_db(4 * math.pi * (dist_km * 1000)**2)
 
 
+def rx_pfd_hz_adjust(model, base, n):
+    """Transforms a PF into a PFD at N Hz for Rx
+    """
+    return pfd_hz_manual_adjust(base, model.required_rx_bw_hz, n)
+
+
+def tx_pfd_hz_adjust(model, base, n):
+    """Transforms a PF into a PFD at N Hz for Tx
+    """
+    return pfd_hz_manual_adjust(base, model.required_tx_bw_hz, n)
+
+
+def pfd_hz_manual_adjust(base, occ, n):
+    """Transforms a PF into a PFD at N Hz for Rx assuming occ BW
+    """
+
+    n_db = to_db(n)
+    occ_db = to_db(occ)
+    if n_db > occ_db:
+        return base
+    else:
+        return base - occ_db + n_db
+
+
 def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
     """Generates a sample antenna pattern.
 
