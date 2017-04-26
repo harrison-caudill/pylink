@@ -6,6 +6,7 @@ import os
 import pprint
 import re
 import sys
+import tempfile
 import traceback
 import utils
 
@@ -172,7 +173,6 @@ class DAGModel(object):
 
 
     def _calculate(self, node, stack=None):
-
         if stack:
             orig_stack = self._stack
             self._stack = stack
@@ -372,3 +372,25 @@ class DAGModel(object):
 
     def nodes(self):
         return self._names.keys()
+
+    def export_deps_dot(self):
+        retval = ['digraph {']
+
+        for node, deps in self._deps.iteritems():
+            for dep in deps:
+                retval.append('  %s -> %s' % (self.node_name(node),
+                                              self.node_name(dep)))
+        retval.append('}')
+        return '\n'.join(retval)
+
+    def export_deps_png(self, path):
+        dot = self.export_deps_dot()
+        n, dotpath = tempfile.mkstemp()
+        fd = open(dotpath, 'w')
+        fd.write(dot)
+        fd.close()
+
+        # build the graph
+        # subprocess.call(['gv', '-o', path, dotpath])
+
+        os.unlink(dotpath)

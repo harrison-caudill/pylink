@@ -86,13 +86,9 @@ class TestBudget(object):
         e = model.enum
         m = model
         m.override(e.pf_dbw_per_m2, -100)
+        m.override(e.allocation_hz, 40e3)
         m.override(e.bitrate_hz,
-                   m.tx_spectral_efficiency_bps_per_hz * 40e3)
-
-        print m.tx_spectral_efficiency_bps_per_hz
-        print m.rx_spectral_efficiency_bps_per_hz
-        print m.bitrate_hz
-        print m.required_rx_bw_hz
+                   m.tx_spectral_efficiency_bps_per_hz * m.allocation_hz)
 
         # NOTE!!!
         # We pull some trickery in here when selecting the best
@@ -104,7 +100,9 @@ class TestBudget(object):
         # find a recursive loop.
         m.best_modulation_code
 
-        assert abs(m.pfd_dbw_per_m2_per_4khz - -110) < 1e-6
+        pfd = pylink.rx_pfd_hz_adjust(m, m.pf_dbw_per_m2, 4e3)
+
+        assert abs(pfd - -110) < 1e-6
 
     def test_tx_inline_losses_db(self, model):
         e = model.enum

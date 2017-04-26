@@ -1,15 +1,12 @@
 #!/usr/bin/python
 
-import types
-import jinja2
-import os
-from jinja2 import Template
-import numpy as np
-import matplotlib.pyplot as plt
 import collections
+import jinja2
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import types
 
-from model import DAGModel
-from tagged_attribute import TaggedAttribute
 import utils
 
 
@@ -58,17 +55,20 @@ class Figure(object):
         ax.set_xlabel('Elevation Angle (degrees)')
         ax.set_ylabel(self.ylabel())
 
-        if 'pfd_limits' in vars(self) and self.pfd_limits:
-            upper = max(max(y), self.pfd_limits[-1][1])
-            lower = min(min(y), self.pfd_limits[0][1])
-        else:
-            upper = max(y)
-            lower = min(y)
-        delta = upper - lower
-        upper += delta*0.1
-        lower -= delta*0.1
+        # XXX: matplotlib is doing weird things if you set ylim this way
+        # if 'pfd_limits' in vars(self) and self.pfd_limits:
+        #     upper = max(max(y), self.pfd_limits[-1][1])
+        #     lower = min(min(y), self.pfd_limits[0][1])
 
-        plt.ylim(lower, upper)
+        #     delta = upper - lower
+        #     upper += delta*0.1
+        #     lower -= delta*0.1
+
+        #     plt.ylim(lower, upper)
+        # else:
+        #     upper = max(y)
+        #     lower = min(y)
+
         if not fname:
             fname = self.fname()
         path = os.path.join(dname, fname)
@@ -288,19 +288,13 @@ class BitrateFigure(Figure):
         return 'Bitrate with %ddB of Link Margin vs Elevation' % self.model.target_margin_db
 
     def ylabel(self):
-        return 'Max Bitrate (Hz)'
+        return 'Max Bitrate (MHz)'
 
     def plot(self, dname='.', fname=None):
         def __y(i):
             R = self.model.max_bitrate_hz
             m = self.model
-            print ' '.join([
-                'El=%-2d' % i,
-                'R=%-3d%s' % utils.human_hz(R),
-                'TxEff=%-4.2f' % m.best_modulation_code.tx_eff,
-                'Margin=%-5.2f' % m.link_margin_db,
-                ])
-            return self.model.max_bitrate_hz
+            return self.model.max_bitrate_hz / 1.0e6
         return self._plot_vs_el(__y, dname=dname, fname=fname)
 
 
@@ -566,7 +560,6 @@ class Report(object):
                 ('Ionospheric Loss', m.ionospheric_loss_db, 'dB'),
                 ('Rain Loss', m.rain_loss_db, 'dB'),
                 ('Multipath Fading Loss', m.multipath_fading_db, 'dB'),
-                ('Polarization Mismatch Loss', m.polarization_mismatch_loss_db, 'dB'),
                 ('Total Channel Loss', m.total_channel_loss_db, 'dB'),
                 ]),
 

@@ -28,6 +28,9 @@ DAGModel
 LoopException
 BitrateFigure
 CanonicalPFDFigure
+ExpectedPFDFigure
+PFDvsBWFigure
+BitrateFigure
 Report
 TaggedAttribute
 
@@ -60,6 +63,8 @@ from utils import to_db
 from utils import from_db
 from utils import spreading_loss_db
 from utils import pattern_generator
+from utils import rx_pfd_hz_adjust
+from utils import tx_pfd_hz_adjust
 
 from tributaries.antenna import Antenna
 from tributaries.budget import LinkBudget
