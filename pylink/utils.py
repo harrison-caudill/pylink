@@ -161,6 +161,11 @@ def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
 
 
 def eirp_dbw_to_e_field_v_per_m(eirp_dbw, dist_m):
+    """Returns the E field strength at a given distance/eirp
+
+    The resulting value is in volts per meter, linear units.  The EIRP
+    should be in dBW.
+    """
     # http://www.ti.com/lit/an/swra048/swra048.pdf
     # https://www.craf.eu/useful-equations/conversion-formulae/
     # (PG)/(4*pi*d^2) = (E^2)/(120*pi)
@@ -176,10 +181,13 @@ def eirp_dbw_to_e_field_v_per_m(eirp_dbw, dist_m):
 
 
 def e_field_to_eirp_dbw(E, dist_m):
+    """Returns the EIRP required to create a given E field strength.
 
+    E field strength is in linear units, volts per meter.  The
+    resulting value is in dBW.
+    """
     # http://www.ti.com/lit/an/swra048/swra048.pdf
     # eirp = to_db(E^2 * dist_m^2 / 0.03)
-
     # https://www.craf.eu/useful-equations/conversion-formulae/
     # (PG)/(4*pi*d^2) = (E^2)/(120*pi)
     # eirp/(4*pi*d^2) = (E^2)/(120*pi)

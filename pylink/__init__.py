@@ -39,8 +39,12 @@ to_db
 from_db
 spreading_loss_db
 pattern_generator
-
-
+rx_pfd_hz_adjust
+tx_pfd_hz_adjust
+e_field_to_eirp_dbw
+eirp_dbw_to_e_field_v_per_m
+human_hz
+human_m
 """
 
 __title__ = 'pylink'
@@ -67,6 +71,9 @@ from utils import rx_pfd_hz_adjust
 from utils import tx_pfd_hz_adjust
 from utils import e_field_to_eirp_dbw
 from utils import eirp_dbw_to_e_field_v_per_m
+from utils import human_hz
+from utils import human_m
+
 
 from tributaries.antenna import Antenna
 from tributaries.budget import LinkBudget
