@@ -158,3 +158,34 @@ def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
     retval = retval[n_half-n_q:] + retval[:n_half-n_q]
 
     return retval
+
+
+def eirp_dbw_to_e_field_v_per_m(eirp_dbw, dist_m):
+    # http://www.ti.com/lit/an/swra048/swra048.pdf
+    # https://www.craf.eu/useful-equations/conversion-formulae/
+    # (PG)/(4*pi*d^2) = (E^2)/(120*pi)
+    # eirp/(4*pi*d^2) = (E^2)/(120*pi)
+    # E^2 = eirp * 120 * pi / 4 * pi * d^2
+    # E^2 = eirp * 30 / d^2
+    # E = (eirp * 30 / d^2) ^0.5
+    # E = (eirp * 30) ^ 0.5 / d
+    # E = (eirp * 30) ^ 0.5 / d
+    E_db = ((eirp_dbw + to_db(30)) / 2) - to_db(dist_m)
+    E = from_db(E_db)
+    return E
+
+
+def e_field_to_eirp_dbw(E, dist_m):
+
+    # http://www.ti.com/lit/an/swra048/swra048.pdf
+    # eirp = to_db(E^2 * dist_m^2 / 0.03)
+
+    # https://www.craf.eu/useful-equations/conversion-formulae/
+    # (PG)/(4*pi*d^2) = (E^2)/(120*pi)
+    # eirp/(4*pi*d^2) = (E^2)/(120*pi)
+    # eirp = (E^2) * (4*pi*d^2) / (120*pi)
+    # eirp = (E^2 * d^2 * 4 * pi) / (120 * pi)
+    # eirp = (E^2 * d^2) / 30
+
+    eirp = E**2 * dist_m**2 / 30
+    return to_db(eirp)

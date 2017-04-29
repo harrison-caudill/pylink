@@ -65,6 +65,8 @@ from utils import spreading_loss_db
 from utils import pattern_generator
 from utils import rx_pfd_hz_adjust
 from utils import tx_pfd_hz_adjust
+from utils import e_field_to_eirp_dbw
+from utils import eirp_dbw_to_e_field_v_per_m
 
 from tributaries.antenna import Antenna
 from tributaries.budget import LinkBudget
