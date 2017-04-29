@@ -175,6 +175,7 @@ def eirp_dbw_to_e_field_v_per_m(eirp_dbw, dist_m):
     # E = (eirp * 30 / d^2) ^0.5
     # E = (eirp * 30) ^ 0.5 / d
     # E = (eirp * 30) ^ 0.5 / d
+
     E_db = ((eirp_dbw + to_db(30)) / 2) - to_db(dist_m)
     E = from_db(E_db)
     return E
