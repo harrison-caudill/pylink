@@ -1,63 +1,34 @@
 #!/usr/bin/python
 
-import types
-import jinja2
-import os
-from jinja2 import Template
-import numpy as np
-import matplotlib.pyplot as plt
 import collections
+import jinja2
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import types
 
-from model import DAGModel
-from tagged_attribute import TaggedAttribute
 import utils
 
 
-class PFDFigure(object):
-    """Power Flux Density figure object
+class Figure(object):
 
-    This object is designed to allow you to easily generate figures
-    for PF(D) figures.  It spans several use-cases:
+    def __init__(self):
+        pass
 
-     * PF vs elevation angle
-     * PFD vs elevation angle at a specified BW
-     * Peak PFD vs BW for a given range
-     * Some can be either at GSO or at the receiver
+    def to_latex(self, dname='.', fname=None):
 
-    It works for uplinks and downlinks.
-    """
+        if not fname:
+            fname = self.fname()
 
-    def _plot_peak_pfd(self):
-        m = self.model
-        e = self.model.enum
+        return '''
+  \\begin{figure}
+    \\caption{%s}
+    \\includegraphics[width=\\linewidth]{%s}
+    \\label{fig::pfd::%s}
+  \\end{figure}
+        ''' % (self.caption(), os.path.join(dname, fname), self.label())
 
-        occ_bw = self.model.required_bw_hz
-        if self.is_gso:
-            pfd_per_hz = m.peak_pfd_at_geo_dbw_per_m2_per_hz
-        else:
-            pfd_per_hz = m.peak_pf_dbw_per_m2_per_hz
-        pfd_per_hz = peak_pf - utils.to_db(occ_bw)
-
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
-        n = int(self.end_hz) - int(self.start_hz)
-        x = np.linspace(1, n, n-1)
-        x += self.start_hz
-        y = np.zeros(n-1)
-        y += pfd_per_hz
-        for i in range(len(x)):
-            bw = min(x[i], occ_bw)
-            y[i] += _to_n_hz(m, pfd_per_hz, bw)
-        ax.plot(x, y, color='b', label='PFD (dBW/m^2)')
-
-        ax.set_xlabel('Bandwidth (Hz)')
-        if self.is_gso:
-            ax.set_ylabel('PFD at GSO(dBW/m^2')
-        else:
-            ax.set_ylabel('PFD at Receiver (dBW/m^2)')
-        plt.savefig(self.fname(), transparent=True)
-
-    def _plot_pfd_at_receiver(self):
+    def _plot_vs_el(self, y_func, dname='.', fname=None):
         m = self.model
         e = self.model.enum
 
@@ -65,215 +36,266 @@ class PFDFigure(object):
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
-        if self.pfd_limits:
+
+        # Plot any limit lines
+        if 'pfd_limits' in vars(self) and self.pfd_limits:
             x = [p[0] for p in self.pfd_limits]
             y = [p[1] for p in self.pfd_limits]
             ax.plot(x, y, color='r', linewidth=2, label='Limit')
 
+        # Now plot the PFD curve
         x = np.linspace(0.0, 90.0, 90)
         y = np.linspace(0.0, 90.0, 90)
+
         for i in range(len(x)):
             m.override(e.min_elevation_deg, x[i])
-            y[i] = (m.compliance_pf_dbw_per_m2
-                    + utils.to_db(self.bw)
-                    - m.required_bw_dbhz)
+            y[i] = y_func(i)
+
         ax.plot(x, y, color='b')
         ax.set_xlabel('Elevation Angle (degrees)')
-        ax.set_ylabel('PFD (dBW/m^2/4KHz')
+        ax.set_ylabel(self.ylabel())
 
-        if self.pfd_limits:
-            upper = max(max(y), self.pfd_limits[-1][1])
-            lower = min(min(y), self.pfd_limits[0][1])
-        else:
-            upper = max(y)
-            lower = min(y)
-        delta = upper - lower
-        upper += delta*0.1
-        lower -= delta*0.1
+        # XXX: matplotlib is doing weird things if you set ylim this way
+        # if 'pfd_limits' in vars(self) and self.pfd_limits:
+        #     upper = max(max(y), self.pfd_limits[-1][1])
+        #     lower = min(min(y), self.pfd_limits[0][1])
 
-        plt.ylim(lower, upper)
-        fig.savefig(self.fname(), transparent=True)
+        #     delta = upper - lower
+        #     upper += delta*0.1
+        #     lower -= delta*0.1
+
+        #     plt.ylim(lower, upper)
+        # else:
+        #     upper = max(y)
+        #     lower = min(y)
+
+        if not fname:
+            fname = self.fname()
+        path = os.path.join(dname, fname)
+        fig.savefig(path, transparent=True)
+
         if orig_el is not None:
             m.override(e.min_elevation_deg, orig_el)
         else:
             m.reset(e.min_elevation_deg)
 
-    def plot(self):
-        if self.is_bw:
-            self._plot_peak_pfd()
-        else:
-            self._plot_pfd_at_receiver()
 
-    def fname(self):
-        prefix = 'gso' if self.is_gso else 'rx'
-        prefix = 'pfd-' + prefix
-        if self.is_bw:
-            retval = '%s_%d-%d.png' % (prefix, self.start_hz, self.end_hz)
-        else:
-            retval = 'rx-vsEl.png'
-        return os.path.join(self.dname, retval)
+class CanonicalPFDFigure(Figure):
+    """Power Flux Density figure for the canonical PFD vs Elevation
 
-    def label(self):
-        prefix = 'gso' if self.is_gso else 'rx'
-        if self.is_bw:
-            return '%s_%d-%d' % (prefix, self.start_hz, self.end_hz)
-        else:
-            return 'rx-vsEl'
+    The canonical figure assumes complete and even use of the
+    spectrum, and it also tends to assume max eirp from the
+    transmitter.  Becauses this model is really only used for
+    compliance purposes, we ignore things like rain losses.
 
-    def caption(self):
-        if self.is_bw:
-            if self.is_gso:
-                return 'Peak PFD at GSO vs Bandwidth'
-            else:
-                if self.budget.is_downlink:
-                    return 'Peak PFD at Surface vs Bandwidth'
-                else:
-                    return 'Peak PFD at Receiver vs Bandwidth'
-        else:
-            return 'PFD at Receiver'
+    This figure also assumes we are dealing with a space-to-earth
+    link.  For NGSO to GSO, or earth-to-space, this figure is
+    inapplicable.
 
-    def to_latex(self):
-        return '''
-  \\begin{figure}
-    \\caption{%s}
-    \\includegraphics[width=\\linewidth]{%s}
-    \\label{fig::pfd::%s}
-  \\end{figure}
-        ''' % (self.caption(), self.fname(), self.label())
+     * Space-to-Earth
+     * Boresight
+     * Full BW Utilization
+    """
 
     def __init__(self,
                  model,
-                 dname='.',
-                 is_bw=True,
-                 start_hz=0,
                  bw=4e3,
+                 pfd_limits=None):
+        """Creates a new canonical pfd figure.
+
+        model -- The DAG model.
+        bw -- BW for the PFD (defaults to 4kHz
+        pfd_limits -- If it is PFD vs elevation, also plot these PFD limits
+        """
+        self.model = model
+        self.pfd_limits = pfd_limits
+        self.bw = bw
+
+    def label(self):
+        return 'pfd-canonical-%d%s' % utils.human_hz(self.bw)
+
+    def fname(self):
+        return 'pfd-canonical-%d%s.png' % utils.human_hz(self.bw)
+
+    def ylabel(self):
+        return 'Boresight PFD (dBW/m^2/%d%s)' % utils.human_hz(self.bw)
+
+    def caption(self):
+        return "Peak PFD at Earth Station assuming full BW utilization"
+
+    def plot(self, dname='.', fname=None):
+        def __y(i):
+            m = self.model
+            return utils.pfd_hz_manual_adjust(m.canonical_pf_dbw_per_m2,
+                                              m.allocation_hz,
+                                              self.bw)
+        return self._plot_vs_el(__y, dname=dname, fname=fname)
+
+
+class ExpectedPFDFigure(Figure):
+    """Power Flux Density figure for the expected case
+
+    The expected case is much more complicated and includes things
+    like antenna patterns, satellite pointing, and modulation code
+    selection.  Typically, when a higher modulation code is selected,
+    the BW utilization drops slightly resulting in slightly higher PFD
+    because the total signal power is spread over slightly fewer Hz.
+    As a result, this graph is not expected to be smooth.  It should,
+    however, be monotonic.
+
+    This figure also assumes we are dealing with a space-to-earth
+    link.  For NGSO to GSO, or earth-to-space, this figure is
+    inapplicable.
+
+     * Space-to-Earth
+     * Expected antenna gain
+     * Expected BW utilization
+    """
+
+    def __init__(self,
+                 model,
+                 bw=4e3,
+                 pfd_limits=None):
+        """Creates a new canonical pfd figure.
+
+        model -- The DAG model.
+        bw -- BW for the PFD (defaults to 4kHz
+        pfd_limits -- If it is PFD vs elevation, also plot these PFD limits
+        """
+        self.model = model
+        self.pfd_limits = pfd_limits
+        self.bw = bw
+
+    def label(self):
+        return 'pfd-expected-%d%s' % utils.human_hz(self.bw)
+
+    def ylabel(self):
+        return 'Expected PFD (dBW/m^2/%d%s)' % utils.human_hz(self.bw)
+
+    def fname(self):
+        return 'pfd-expected-%d%s.png' % utils.human_hz(self.bw)
+
+    def caption(self):
+        return "Expected PFD at Earth Station under normal operations"
+
+    def plot(self, dname='.', fname=None):
+        def __y(i):
+            return utils.rx_pfd_hz_adjust(self.model,
+                                          self.model.pf_dbw_per_m2,
+                                          self.bw)
+        return self._plot_vs_el(__y, dname=dname, fname=fname)
+
+
+class PFDvsBWFigure(Figure):
+    """Peak Power Flux Density figure vs BandWidth
+
+    For compliance reasons, it can be useful to show a graph of the
+    peak acheivable PFD vs BW for both the receiver and the GSO case.
+
+     * Space-to-Earth or Earth-to-Space
+     * Peak antenna gain
+     * Full BW utilization
+     * GSO or Receiver
+    """
+
+    def __init__(self,
+                 model,
+                 start_hz=1,
                  end_hz=4e3,
                  is_gso=False,
                  pfd_limits=None):
         """Creates a new figure.
 
         model -- The DAG model.
-        dname -- The directory in which to place the generated images
-        is_bw -- Is the figure to be PFD vs BW
         start_hz -- If so, starting BW
         end_hz -- And the ending BW
-        bw -- If it is PFD vs elevation, it will be at this BW.
         is_gso -- True if looking at PFD at GSO, otherwise it is the receiver
-        pfd_limits -- If it is PFD vs elevation, also plot these PFD limits
+        pfd_limits -- plot these PFD limits
         """
 
-        self.dname = dname
-        self.is_bw = is_bw
+        self.model = model
         self.start_hz = start_hz
         self.end_hz = end_hz
         self.is_gso = is_gso
-        self.budget = model
-        self.model = budget.model
-        self.enum = self.model.enum
         self.pfd_limits = pfd_limits
-        self.bw = bw
 
+    def fname(self):
+        prefix = 'gso' if self.is_gso else 'rx'
+        prefix = 'pfd-' + prefix
+        return '%s_%d-%d.png' % (prefix, self.start_hz, self.end_hz)
 
-class BitrateFigure(object):
-    """[BROKEN] Max bitrate figure.
-    """
+    def label(self):
+        prefix = 'gso' if self.is_gso else 'rx'
+        return '%s_%d-%d' % (prefix, self.start_hz, self.end_hz)
 
-    def plot(self):
+    def caption(self):
+        if self.is_gso:
+            return 'Peak PFD at GSO vs Bandwidth'
+        else:
+            if self.model.is_downlink:
+                return 'Peak PFD at Surface vs Bandwidth'
+            else:
+                return 'Peak PFD at Receiver vs Bandwidth'
+
+    def plot(self, dname='.', fname=None):
         m = self.model
-        e = self.model.enum
 
-        orig_el = m.min_elevation_deg
-        orig_margin = m.override_value(e.link_margin_db)
-
-        # get our boundaries
-        start_bitrate = m.bitrate_dbhz + m.link_margin_db - self.margin_db
-        start_pfd = m.pf_dbw_per_m2
-
-        min_angle = 0
-        min_pfd = m.pf_dbw_per_m2
-        min_bitrate = m.bitrate_dbhz
-
-        max_angle = 0
-        max_pfd = m.pf_dbw_per_m2
-        max_bitrate = m.bitrate_dbhz
-
-        for i in range(91):
-            m.override(e.min_elevation_deg, i)
-            pfd = m.pf_dbw_per_m2
-            pfd_delta = pfd - start_pfd
-            bitrate = start_bitrate + pfd_delta
-
-            if min_pfd > pfd:
-                min_pfd = pfd
-                min_angle = i
-                min_bitrate = bitrate
-
-            if max_pfd < pfd:
-                max_pfd = pfd
-                max_angle = i
-                max_bitrate = bitrate
+        if self.is_gso:
+            pf = m.peak_pf_at_geo_dbw_per_m2
+        else:
+            pf = m.peak_pf_dbw_per_m2
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
-
-        x = np.linspace(0.0, 90.0, 90)
-        y = np.linspace(0.0, 90.0, 90)
-        unit = None
+        n = int(self.end_hz) - int(self.start_hz)
+        x = np.linspace(1, n, n-1)
+        x += self.start_hz
+        y = np.zeros(n-1)
         for i in range(len(x)):
-            m.override(e.min_elevation_deg, x[i])
-            start = utils.from_db(min_bitrate)*.9
-            stop = utils.from_db(max_bitrate)*1.1
-            step = (stop - start) / self.n_steps
+            bw = x[i]
+            y[i] = utils.pfd_hz_manual_adjust(pf, m.allocation_hz, bw)
 
-            bitrate = m.solve_for(e.bitrate_hz,
-                                  e.link_margin_db, self.margin_db,
-                                  start, stop, step,
-                                  rounds=4)
-            (R, unit,) = utils.human_hz(bitrate)
-            y[i] = R
+        ax.plot(x, y, color='b', label='PFD (dBW/m^2)')
 
-        ax.plot(x, y, color='b')
-        ax.set_xlabel('Elevation Angle (degrees)')
-        ax.set_ylabel('Bitrate (%s)' % unit)
+        ax.set_xlabel('Bandwidth (Hz)')
+        if self.is_gso:
+            ax.set_ylabel('PFD at GSO(dBW/m^2')
+        else:
+            ax.set_ylabel('PFD at Receiver (dBW/m^2)')
+        if not fname:
+            fname = self.fname()
+        path = os.path.join(dname, fname)
+        fig.savefig(path, transparent=True)
 
-        upper = max(y)
-        lower = min(y)
-        delta = upper - lower
-        upper += delta*0.1
-        lower -= delta*0.1
 
-        plt.ylim(lower, upper)
-        fig.savefig(self.fname())
+class BitrateFigure(Figure):
+    """Max bitrate vs Elevation Figure
 
-        m.override(e.min_elevation_deg, orig_el)
-        if orig_margin is not None:
-            m.override(e.link_margin_db, orig_margin)
+    This graph assumes normal operations and indicates the max
+    available bitrate.
+    """
 
-    def fname(self):
-        return 'bitrate.png'
+    def __init__(self, model):
+        self.model = model
 
     def label(self):
-        return 'bitrate'
+        return 'max-bitrate'
+
+    def fname(self):
+        return 'max-bitrate.png'
 
     def caption(self):
-        return 'Bitrate with %ddB of Link Margin vs Elevation' % self.margin_db
+        return 'Bitrate with %ddB of Link Margin vs Elevation' % self.model.target_margin_db
 
-    def to_latex(self):
-        return '''
-  \\begin{figure}
-    \\caption{%s}
-    \\includegraphics[width=\\linewidth]{%s}
-    \\label{fig::pfd::%s}
-  \\end{figure}
-        ''' % (self.caption(), self.fname(), self.label())
+    def ylabel(self):
+        return 'Max Bitrate (MHz)'
 
-
-    def __init__(self, budget, margin_db=2, n_steps=200):
-        self.budget = budget
-        self.model = self.budget.model
-        self.enum = self.model.enum
-        self.margin_db = margin_db
-        self.n_steps = n_steps
+    def plot(self, dname='.', fname=None):
+        def __y(i):
+            R = self.model.max_bitrate_hz
+            m = self.model
+            return self.model.max_bitrate_hz / 1.0e6
+        return self._plot_vs_el(__y, dname=dname, fname=fname)
 
 
 class Report(object):
@@ -317,7 +339,7 @@ class Report(object):
         chain = m.rx_rf_chain
 
         fields = [('Element', '', 1.25),
-                  ('Gain', 'dB', .35),
+                  ('Gain', 'dB', .47),
                   ('Noise Figure', 'dB', .47),
                   #('Gain Factor', '', .5),
                   #('Noise Factor', '', .5),
@@ -538,18 +560,19 @@ class Report(object):
                 ('Ionospheric Loss', m.ionospheric_loss_db, 'dB'),
                 ('Rain Loss', m.rain_loss_db, 'dB'),
                 ('Multipath Fading Loss', m.multipath_fading_db, 'dB'),
-                ('Polarization Mismatch Loss', m.polarization_mismatch_loss_db, 'dB'),
                 ('Total Channel Loss', m.total_channel_loss_db, 'dB'),
                 ]),
 
             ('Modulation (%s)' % m.modulation_name, [
                 ('Modulation Name', m.modulation_name, ''),
                 ('Modulation Code', m.best_modulation_code.name, ''),
+                ('Tx Spectral Efficiency', m.best_modulation_code.tx_eff, ''),
                 self._humanize_hz('Bitrate', m.bitrate_hz),
                 ('Bitrate', m.bitrate_dbhz, 'dBHz'),
                 ('Required Demodulation $E_b/N_0$', m.required_demod_ebn0_db, 'dB'),
                 self._humanize_hz('Required Demod Bandwidth', m.required_rx_bw_hz),
                 ('Required Demod Bandwidth', m.required_rx_bw_dbhz, 'dBHz'),
+                ('Required Transmit Bandwidth', m.required_tx_bw_dbhz, 'dBHz'),
                 ]),
             ])
 
@@ -613,6 +636,7 @@ class Report(object):
                 ('Required $E_b/N_0$', m.required_ebn0_db, 'dB'),
                 ]),
             ('Key Outputs', [
+                self._humanize_hz('Bitrate', m.bitrate_hz),
                 ('Link Margin', m.link_margin_db, 'dB'),
                 ]),
             ])
@@ -636,12 +660,12 @@ class Report(object):
 
         figs = []
         for fig in pfd_figures:
-            fig.plot()
+            fig.plot(dname=os.path.dirname(fname))
             figs.append(fig.to_latex())
         interference_figures = '\n'.join(figs)
 
         if bitrate_figure:
-            bitrate_figure.plot()
+            bitrate_figure.plot(dname=os.path.dirname(fname))
             budget_figures = bitrate_figure.to_latex()
         else:
             budget_figures = ''

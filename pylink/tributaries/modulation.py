@@ -12,14 +12,7 @@ class Code(object):
         self.tx_eff = tx_eff
         self.rx_eff = rx_eff
         self.esn0_db = esn0_db
-
-        # cached values
-        self.saturating_cn0 = None
-        self.max_unconstrained_bitrate = None
-        self.max_constrained_bitrate = None
-
-    def req_demod_ebn0_db(self):
-        return self.esn0_db - utils.to_db(self.rx_eff)
+        self.ebn0_db = esn0_db - utils.to_db(rx_eff)
 
 
 # http://www.etsi.org/deliver/etsi_en/302300_302399/30230702/01.01.01_20
@@ -29,7 +22,6 @@ class Code(object):
 # defaults to 0.8 * the receive spectral efficiency to leave room for
 # rolloff.  Feel free to override
 NORMAL_DVBS2X_PERFORMANCE = [
-    Code("QPSK 2/9", 0.347873, 0.434841, -2.850000),
     Code("QPSK 13/45", 0.454244, 0.567805, -2.030000),
     Code("QPSK 9/20", 0.711308, 0.889135, 0.220000),
     Code("QPSK 11/20", 0.870865, 1.088581, 1.450000),
@@ -71,15 +63,6 @@ NORMAL_DVBS2X_PERFORMANCE = [
     ]
 
 
-def __max_bitrate_hz(cn0_db,
-                     additional_rx_losses_db,
-                     target_margin_db,
-                     required_ebn0_db):
-    cn0 = cn0_db - additional_rx_losses_db - target_margin_db
-    ebn0 = required_ebn0_db
-    return utils.from_db(cn0 - ebn0)
-
-
 def _modulation_code_lookup_table(model):
     e = model.enum
 
@@ -91,46 +74,48 @@ def _modulation_code_lookup_table(model):
     retval = {}
 
     for code in model.modulation_performance_table:
-        max_constrained = allocation * code.tx_eff
-        code.max_constrained_bitrate = max_constrained
-        code.saturating_cn0 = code.req_demod_ebn0_db() * max_constrained
-
-        retval[max_constrained] = code
+        retval[code.ebn0_db] = code
 
     return retval
+
+
+def _max_allowable_bitrate_hz(model):
+    return model.best_modulation_code.tx_eff * model.allocation_hz
+
+
+def __max_bitrate_hz(model, code, additional_rx_losses_db):
+    R_db_hz = (model.cn0_db
+               - additional_rx_losses_db
+               - model.target_margin_db
+               - code.ebn0_db)
+
+    max_R = model.allocation_hz * code.tx_eff
+
+    return min(utils.from_db(R_db_hz), max_R)
 
 
 def _best_modulation_code(model):
     e = model.enum
 
-    allocation = model.allocation_hz
-    cn0_db = model.cn0_db
-    implementation_loss_db = model.implementation_loss_db
-    target_margin_db = model.target_margin_db
-
-    best_option = None
-    best_bitrate = -1
-
-    for sat_cn0, code in model.modulation_code_lookup_table.iteritems():
-
+    def __rate_for(code):
         # DANGER WILL ROBINSON!!
         model.override(e.best_modulation_code, code)
         added_loss = model.cached_calculate(e.additional_rx_losses_db,
                                             clear_stack=True)
         model.revert(e.best_modulation_code)
         # DANGER WILL ROBINSON!!
+        return __max_bitrate_hz(model, code, added_loss)
 
-        max_unconstrained = __max_bitrate_hz(cn0_db,
-                                             added_loss,
-                                             target_margin_db,
-                                             code.req_demod_ebn0_db())
-        R = min(max_unconstrained, code.max_constrained_bitrate)
+    # FIXME: Use an O(log(n)) algorithm here...for kicks and cycles
+    prev_R = 0
+    retval = None
+    for code in model.modulation_performance_table:
+        R = __rate_for(code)
+        if R > prev_R:
+            prev_R = R
+            retval = code
 
-        if R > best_bitrate:
-            best_option = code
-            best_bitrate = R
-
-    return best_option
+    return retval
 
 
 def _rx_spectral_efficiency_bps_per_hz(model):
@@ -142,14 +127,13 @@ def _tx_spectral_efficiency_bps_per_hz(model):
 
 
 def _required_demod_ebn0_db(model):
-    return model.best_modulation_code.req_demod_ebn0_db()
+    return model.best_modulation_code.ebn0_db
 
 
 def _max_bitrate_hz(model):
-    return __max_bitrate_hz(model.cn0_db,
-                            model.additional_rx_losses_db,
-                            model.target_margin_db,
-                            model.required_ebn0_db)
+    return __max_bitrate_hz(model,
+                            model.best_modulation_code,
+                            model.additional_rx_losses_db)
 
 
 class Modulation(object):
@@ -174,6 +158,7 @@ class Modulation(object):
 
         self.tribute = {
             # calculators
+            'max_allowable_bitrate_hz': _max_allowable_bitrate_hz,
             'required_demod_ebn0_db': _required_demod_ebn0_db,
             'best_modulation_code': _best_modulation_code,
             'tx_spectral_efficiency_bps_per_hz': _tx_spectral_efficiency_bps_per_hz,

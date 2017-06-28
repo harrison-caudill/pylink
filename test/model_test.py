@@ -227,3 +227,102 @@ class TestModel(object):
         assert m.A == 42
         m.override(e.A, 41)
         assert m.A == 41
+
+    def test_is_calculated_node(self, model):
+        e = model.enum
+        assert model.is_calculated_node(e.link_margin_db)
+        assert not model.is_calculated_node(e.rx_antenna_noise_temp_k)
+
+    def test_is_static_node(self, model):
+        e = model.enum
+        assert model.is_static_node(e.rx_antenna_noise_temp_k)
+        assert not model.is_static_node(e.link_margin_db)
+
+    def test_is_overridden(self, model):
+        e = model.enum
+
+        # static nodes cannot be overridden, so try one first
+        assert model.is_static_node(e.rx_antenna_noise_temp_k)
+        assert not model.is_overridden(e.rx_antenna_noise_temp_k)
+
+        # now try a calculated node
+        assert model.is_calculated_node(e.link_margin_db)
+        assert not model.is_overridden(e.link_margin_db)
+        model.override(e.link_margin_db, 1)
+        assert model.is_overridden(e.link_margin_db)
+        model.revert(e.link_margin_db)
+        assert not model.is_overridden(e.link_margin_db)
+
+    def test_solve_for(self, model):
+        m = model
+        e = m.enum
+
+        # Basic operation - make sure it doesn't die
+        tmp = m.solve_for(e.rx_antenna_noise_temp_k,
+                          e.link_margin_db,
+                          0.125,
+                          300, 5000, 10,
+                          rounds=1)
+
+        # Basic operation - make sure it doesn't die on 10 rounds
+        tmp = m.solve_for(e.rx_antenna_noise_temp_k,
+                          e.link_margin_db,
+                          0.125,
+                          300, 5000, 10,
+                          rounds=10)
+
+        # Should error-out on invalid input: same input and output
+        with pytest.raises(AttributeError):
+            tmp = m.solve_for(e.link_margin_db,
+                              e.link_margin_db,
+                              0.125,
+                              300, 5000, 10,
+                              rounds=10)
+
+        # Should error-out on invalid input: static output variable
+        with pytest.raises(AttributeError):
+            tmp = m.solve_for(e.link_margin_db,
+                              e.rx_antenna_noise_temp_k,
+                              0.125,
+                              300, 5000, 10,
+                              rounds=10)
+
+        # Should error-out on invalid input: 0 step size
+        with pytest.raises(AttributeError):
+            tmp = m.solve_for(e.link_margin_db,
+                              e.rx_antenna_noise_temp_k,
+                              0.125,
+                              300, 5000, 0,
+                              rounds=10)
+
+        # Should error-out on invalid input: negative rounds
+        with pytest.raises(AttributeError):
+            tmp = m.solve_for(e.link_margin_db,
+                              e.rx_antenna_noise_temp_k,
+                              0.125,
+                              300, 5000, 0,
+                              rounds=-1)
+
+        # Should error-out on invalid input: non-integer rounds
+        with pytest.raises(AttributeError):
+            tmp = m.solve_for(e.link_margin_db,
+                              e.rx_antenna_noise_temp_k,
+                              0.125,
+                              300, 5000, 0,
+                              rounds=1.0)
+
+        # Basic operation: proper value
+        def __round(ans, order):
+            return round(ans * 10**order)/10**order
+
+        model.override(e.rx_ebn0_db, 10.0)
+        model.override(e.required_ebn0_db, 2.0)
+        target = 0.1257354
+        ans = 2.0 + target
+
+        for i in range(10):
+            tmp = m.solve_for(e.rx_ebn0_db,
+                              e.link_margin_db, target,
+                              0.0, 10.0, 1.0,
+                              rounds=i+1)
+            assert abs(__round(ans, i) - tmp) < 1e-6

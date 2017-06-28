@@ -72,6 +72,30 @@ def spreading_loss_db(dist_km):
     return to_db(4 * math.pi * (dist_km * 1000)**2)
 
 
+def rx_pfd_hz_adjust(model, base, n):
+    """Transforms a PF into a PFD at N Hz for Rx
+    """
+    return pfd_hz_manual_adjust(base, model.required_rx_bw_hz, n)
+
+
+def tx_pfd_hz_adjust(model, base, n):
+    """Transforms a PF into a PFD at N Hz for Tx
+    """
+    return pfd_hz_manual_adjust(base, model.required_tx_bw_hz, n)
+
+
+def pfd_hz_manual_adjust(base, occ, n):
+    """Transforms a PF into a PFD at N Hz for Rx assuming occ BW
+    """
+
+    n_db = to_db(n)
+    occ_db = to_db(occ)
+    if n_db > occ_db:
+        return base
+    else:
+        return base - occ_db + n_db
+
+
 def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
     """Generates a sample antenna pattern.
 
@@ -134,3 +158,43 @@ def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
     retval = retval[n_half-n_q:] + retval[:n_half-n_q]
 
     return retval
+
+
+def eirp_dbw_to_e_field_v_per_m(eirp_dbw, dist_m):
+    """Returns the E field strength at a given distance/eirp
+
+    The resulting value is in volts per meter, linear units.  The EIRP
+    should be in dBW.
+    """
+    # http://www.ti.com/lit/an/swra048/swra048.pdf
+    # https://www.craf.eu/useful-equations/conversion-formulae/
+    # (PG)/(4*pi*d^2) = (E^2)/(120*pi)
+    # eirp/(4*pi*d^2) = (E^2)/(120*pi)
+    # E^2 = eirp * 120 * pi / 4 * pi * d^2
+    # E^2 = eirp * 30 / d^2
+    # E = (eirp * 30 / d^2) ^0.5
+    # E = (eirp * 30) ^ 0.5 / d
+    # E = (eirp * 30) ^ 0.5 / d
+
+    E_db = ((eirp_dbw + to_db(30)) / 2) - to_db(dist_m)
+    E = from_db(E_db)
+    return E
+
+
+def e_field_to_eirp_dbw(E, dist_m):
+    """Returns the EIRP required to create a given E field strength.
+
+    E field strength is in linear units, volts per meter.  The
+    resulting value is in dBW.
+    """
+    # http://www.ti.com/lit/an/swra048/swra048.pdf
+    # eirp = to_db(E^2 * dist_m^2 / 0.03)
+    # https://www.craf.eu/useful-equations/conversion-formulae/
+    # (PG)/(4*pi*d^2) = (E^2)/(120*pi)
+    # eirp/(4*pi*d^2) = (E^2)/(120*pi)
+    # eirp = (E^2) * (4*pi*d^2) / (120*pi)
+    # eirp = (E^2 * d^2 * 4 * pi) / (120 * pi)
+    # eirp = (E^2 * d^2) / 30
+
+    eirp = E**2 * dist_m**2 / 30
+    return to_db(eirp)

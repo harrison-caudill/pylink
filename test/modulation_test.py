@@ -62,13 +62,13 @@ class TestModulation(object):
         assert abs(code.rx_eff - .5) < 1e-5
 
         # check the ebn0
-        assert abs(code.req_demod_ebn0_db() - 7.0102) < 1e-4
+        assert abs(code.ebn0_db - 7.0102) < 1e-4
 
         # check another ebn0
         perf = [pylink.Code("8PSK", 2, 2, 12)]
         m.override(e.modulation_performance_table, perf)
         code = m.best_modulation_code
-        assert abs(code.req_demod_ebn0_db() - 8.9898) < 1e-4
+        assert abs(code.ebn0_db - 8.9898) < 1e-4
 
     def test_tx_spectral_efficiency_bps_per_hz(self, model):
         e = model.enum
