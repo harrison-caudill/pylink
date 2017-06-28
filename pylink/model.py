@@ -384,12 +384,6 @@ class DAGModel(object):
         var_is_over = self.is_overridden(var)
         var_orig = _static_val(var, var_is_calc)
 
-        print "type, override, calculated, value"
-        print "fixed    %d          %d     %s" % (
-            fix_is_over, fix_is_calc, fix_orig)
-        print "var      %d          %d     %s" % (
-            var_is_over, var_is_calc, var_orig)
-
         n = (stop - start) / step
         for i in range(rounds):
             retval = self._solve_for(var,
