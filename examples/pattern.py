@@ -19,3 +19,11 @@ for peak in [3, 5, 15]:
                      include_raw=False,
                      title='%ddBi Generated Pattern' % peak,
                      ylim=[null-3, peak+3])
+
+
+f = os.path.join(d, 'pattern-manual.png')
+pattern = [10, 5, -5, -9, -10, -10, -10, -10, -10, -10, -9, -5, 5]
+ant = pylink.Antenna(pattern=pattern)
+ant.plot_pattern(f,
+                 include_raw=True,
+                 title='Manual Pattern')
