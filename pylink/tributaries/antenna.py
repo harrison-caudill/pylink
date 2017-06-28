@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 import math
 
-from ..model import DAGModel
-from .. import utils
+from model import DAGModel
+import utils
 
 
 def _floor(v, n):
@@ -45,12 +45,6 @@ def _average_nadir_gain_dbi(pattern, angles):
 
 
 class Antenna(object):
-    """Antenna tributary
-
-    This class can be used either for tx or for rx and it will
-    register its functions as either the tx_antenna_... or
-    rx_antenna_... as appropriate.
-    """
 
     def __init__(self,
                  pattern=None,
@@ -61,20 +55,6 @@ class Antenna(object):
                  pointing_loss_db=0,
                  is_rx=True,
                  **meta):
-        """Create a new antenna tributary.
-
-        pattern -- list of evenly-spaced pattern cut values starting at 0
-        gain -- peak gain of the antenna
-        polarization -- str
-        tracking -- does it track the target (eg rotator) or not (eg nadir)
-        rf_chain -- list of Element objects for the RF hain on the board
-        pointing_loss_db -- for now, just the number of dB of pointing loss
-        is_rx -- is it for receive or transmit
-        kwargs -- any metadata to assign to the antenna itself
-
-        If there are 360 points in the pattern, it will be
-        interpolated for you automatically.
-        """
 
         self.meta = meta
 
@@ -238,18 +218,6 @@ class Antenna(object):
         fig.savefig(fname, transparent=True)
 
     def plot_pattern(self, fname, include_raw=True, title=None, ylim=None):
-        """Plots the pattern to a PNG file.
-
-        fname -- where to save it
-        include_raw -- If the pattern is interpolated, include the raw points?
-        title -- Title of the image
-        ylim -- [min, max] as desired
-
-        If, for example, your real pattern varies by only one dB, its
-        plot can be correct, but look a little weird as you see it
-        vary wildly from one side to the other whereas it is quite
-        stable in reality.  Thtat's why the <ylim> is an option.
-        """
 
         prefix = 'RX' if self.is_rx else 'TX'
         if not title:
