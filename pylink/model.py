@@ -83,6 +83,21 @@ class DAGModel(object):
         self._deps = {}
         self._map_dependencies()
 
+    def is_calculated_node(self, node):
+        """Determines whether or not the given node is calculated.
+        """
+        return node in self._calc
+
+    def is_static_node(self, node):
+        """Determines whether or not the given node is static.
+        """
+        return not self.is_calculated_node(node)
+
+    def is_overridden(self, node):
+        """Determines whether or not the given node is overridden.
+        """
+        return self.is_calculated_node(node) and node in self._values
+
     def get_meta(self, node):
         """Returns the metadata dict associated with this node
         """
@@ -305,13 +320,13 @@ class DAGModel(object):
         return None
 
     def _solve_for(self, var, fixed, fixed_value, start, stop, step):
-        original_variable_value = self.override_value(var)
-        original_fixed_value = self.override_value(fixed)
+
+        # The output variable should always be reverted
         self.revert(fixed)
 
         best_val = start
         best_diff = abs(fixed_value - self.cached_calculate(fixed))
-        
+
         for i in xrange(0, int((stop-start)/step), 1):
             val = start + step*i
             self.override(var, val)
@@ -319,14 +334,6 @@ class DAGModel(object):
             if diff < best_diff:
                 best_diff = diff
                 best_val = val
-
-        self.revert(fixed)
-        if original_fixed_value is not None:
-            self.override(fixed, original_fixed_value)
-        
-        self.revert(var)
-        if original_variable_value is not None:
-            self.override(var, original_variable_value)
 
         return best_val
 
@@ -353,9 +360,36 @@ class DAGModel(object):
         rounds -- The total number of rounds to attempt
         """
 
-        if rounds < 1:
-            raise AttributeError("Gimme a number of rounds > 0 please.")
-        
+        # It only makes sense to use a fixed variable that is a
+        # calculator, so we check for that here.
+        if not self.is_calculated_node(fixed):
+            raise AttributeError("Can only solve with calculated outputs")
+
+        # The number of rounds should be a member of Z+ > 0
+        if int != type(rounds) or rounds < 1:
+            raise AttributeError("Gimme an int number of rounds > 0, please.")
+
+        # The control and response variables cannot be the same
+        if fixed == var:
+            raise AttributeError("Fixed and Variable nodes cannot be the same")
+
+        # Preserve the original values
+        def _static_val(node, is_calc):
+            if is_calc: return self.override_value(node)
+            return self.cached_calculate(node)
+        fix_is_calc = self.is_calculated_node(fixed)
+        fix_is_over = self.is_overridden(fixed)
+        fix_orig = _static_val(fixed, fix_is_calc)
+        var_is_calc = self.is_calculated_node(var)
+        var_is_over = self.is_overridden(var)
+        var_orig = _static_val(var, var_is_calc)
+
+        print "type, override, calculated, value"
+        print "fixed    %d          %d     %s" % (
+            fix_is_over, fix_is_calc, fix_orig)
+        print "var      %d          %d     %s" % (
+            var_is_over, var_is_calc, var_orig)
+
         n = (stop - start) / step
         for i in range(rounds):
             retval = self._solve_for(var,
@@ -365,8 +399,28 @@ class DAGModel(object):
                                      step)
             ostep = step
             step = step/n
+            if 0 == step:
+                break
             start = max(retval - ostep/2.0 - 2*step, start)
             stop = min(retval + ostep/2.0 + 2*step, stop)
+
+
+        # Restoration action truth table
+        #
+        # override, calculated, action
+        #    0           0      restore
+        #    0           1      nothing
+        #    1           0      ERROR (can only override calculated nodes)
+        #    1           1      restore
+
+        restore_fix = not (fix_is_over ^ fix_is_calc)
+        restore_var = not (var_is_over ^ var_is_calc)
+
+        if restore_fix:
+            self.override(fixed, fix_orig)
+
+        if restore_var:
+            self.override(var, var_orig)
 
         return retval
 
