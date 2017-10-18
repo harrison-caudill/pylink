@@ -66,6 +66,20 @@ def human_m(v):
     return (v/1.0e3, 'km')
 
 
+def human_b(bytes):
+    """Returns a number of bytes autoselected for kB, MB, GB, TB
+
+    Just to be clear, this will use the 1024 versions, not the 1000
+    versions.
+    """
+    suffixes = ['TB', 'GB', 'MB', 'kB']
+    for i in range(4):
+        m = 1<<(10*(4-i))
+        if bytes > m:
+            return (bytes / float(m), suffixes[i])
+    return (bytes, 'B')
+
+
 def spreading_loss_db(dist_km):
     """Returns the loss, in dB, associated with distance alone.
     """

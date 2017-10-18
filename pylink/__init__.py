@@ -73,6 +73,7 @@ from utils import e_field_to_eirp_dbw
 from utils import eirp_dbw_to_e_field_v_per_m
 from utils import human_hz
 from utils import human_m
+from utils import human_b
 
 
 from tributaries.antenna import Antenna

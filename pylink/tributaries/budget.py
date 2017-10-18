@@ -100,6 +100,28 @@ def _peak_pfd_at_geo_dbw_per_m2_per_hz(model):
                                       1)
 
 
+def _gso_victim_epfd(model):
+    # http://famille.philippe.gerard.pagesperso-orange.fr/EPFD%20concept/Epfd%20conceptVfinale.htm
+    # https://www.law.cornell.edu/cfr/text/47/25.208
+    #
+    # EPFD is, essentially, the PFD that would be required at the
+    # victim's peak-gain angle to produce the same received power as
+    # the sum of transmitters.
+    #
+    # In linear units:
+    # epfd = sum(epfd_i) for all contributors
+    #
+    # We assume a single contributor, so:
+    # Pr = pfd * Ar = epfd * Ar_max
+    # epfd = pfd * Ar / Ar_max
+    #
+    # In log units:
+    # epfd = pfd + Ar - Ar_max
+    #
+    # Alternatively, we can apply a correction term to the pfd
+    # epfd_delta = Ar - Ar_max
+    pass
+
 def _rx_power_dbw(model):
     return (model.tx_eirp_dbw
             - model.total_channel_loss_db
