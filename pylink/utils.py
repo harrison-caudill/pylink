@@ -154,8 +154,16 @@ def pattern_generator(peak_gain_dbi, null=-20.0, eff=0.7):
     # combine the main lobe with null for the rest of the pattern
     retval = main + [null]*int(n-len(main))
 
+    # find the peak
+    n_rot = 0
+    peak = min(retval)
+    for i in range(len(retval)):
+        if retval[i] > peak:
+            n_rot = i
+            peak = retval[i]
+
     # rotate the pattern
-    retval = retval[n_half-n_q:] + retval[:n_half-n_q]
+    retval = retval[n_rot:] + retval[:n_rot]
 
     return retval
 

@@ -87,7 +87,7 @@ class Antenna(object):
 
         pattern = np.array(pattern)
 
-        self.pattern_angles = np.arange(0, 360, 360/len(pattern))
+        self.pattern_angles = np.arange(0.0, 360.0, 360.0/len(pattern))
         self.pattern = pattern
 
         if len(pattern) == 360:
@@ -216,6 +216,9 @@ class Antenna(object):
             main_angles = interp_angles
             main_pattern = interp
 
+
+        ax.set_theta_zero_location("N")
+
         ax.plot(main_angles,
                 main_pattern,
                 color='r',
@@ -294,7 +297,7 @@ class Antenna(object):
         if self._call(model, 'tracking_target'):
             return self._call(model, 'boresight_gain_dbi')
         else:
-            angle = 90 - self._call(model, 'angle_deg')
+            angle = -1 * self._call(model, 'angle_deg')
             angles = self._call(model, 'gain_pattern_angles')
             idx = _find_nearest_index(angles, angle)
             pattern = self._call(model, 'gain_pattern')
@@ -302,7 +305,7 @@ class Antenna(object):
 
     def _angle_deg(self, model):
         if self._call(model, 'tracking_target'):
-            return 90
+            return 0
 
         if model.is_downlink:
             if self.is_rx:
@@ -322,7 +325,7 @@ class Antenna(object):
     def _boresight_gain_dbi(self, model):
         pattern = self._call(model, 'gain_pattern')
         angles = self._call(model, 'gain_pattern_angles')
-        idx = _find_nearest_index(angles, 90)
+        idx = _find_nearest_index(angles, 0)
         return pattern[idx]
 
     def _average_gain_dbi(self, model):
