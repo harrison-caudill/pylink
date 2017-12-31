@@ -12,8 +12,8 @@ import utils
 
 class Figure(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, title=None):
+        self.title = title
 
     def to_latex(self, dname='.', fname=None):
 
@@ -35,6 +35,8 @@ class Figure(object):
         orig_el = m.override_value(e.min_elevation_deg)
 
         fig = plt.figure()
+        if self.title:
+            fig.suptitle(self.title)
         ax = fig.add_subplot(1, 1, 1)
 
         # Plot any limit lines
@@ -100,13 +102,15 @@ class CanonicalPFDFigure(Figure):
     def __init__(self,
                  model,
                  bw=4e3,
-                 pfd_limits=None):
+                 pfd_limits=None,
+                 title=None):
         """Creates a new canonical pfd figure.
 
         model -- The DAG model.
         bw -- BW for the PFD (defaults to 4kHz
         pfd_limits -- If it is PFD vs elevation, also plot these PFD limits
         """
+        self.title = title
         self.model = model
         self.pfd_limits = pfd_limits
         self.bw = bw
@@ -155,13 +159,15 @@ class ExpectedPFDFigure(Figure):
     def __init__(self,
                  model,
                  bw=4e3,
-                 pfd_limits=None):
+                 pfd_limits=None,
+                 title=None):
         """Creates a new canonical pfd figure.
 
         model -- The DAG model.
         bw -- BW for the PFD (defaults to 4kHz
         pfd_limits -- If it is PFD vs elevation, also plot these PFD limits
         """
+        self.title = title
         self.model = model
         self.pfd_limits = pfd_limits
         self.bw = bw
@@ -203,7 +209,8 @@ class PFDvsBWFigure(Figure):
                  start_hz=1,
                  end_hz=4e3,
                  is_gso=False,
-                 pfd_limits=None):
+                 pfd_limits=None,
+                 title=None):
         """Creates a new figure.
 
         model -- The DAG model.
@@ -213,6 +220,7 @@ class PFDvsBWFigure(Figure):
         pfd_limits -- plot these PFD limits
         """
 
+        self.title = title
         self.model = model
         self.start_hz = start_hz
         self.end_hz = end_hz
@@ -246,6 +254,8 @@ class PFDvsBWFigure(Figure):
             pf = m.peak_pf_dbw_per_m2
 
         fig = plt.figure()
+        if self.title:
+            fig.suptitle(self.title)
         ax = fig.add_subplot(1, 1, 1)
         n = int(self.end_hz) - int(self.start_hz)
         x = np.linspace(1, n, n-1)
@@ -257,9 +267,16 @@ class PFDvsBWFigure(Figure):
 
         ax.plot(x, y, color='b', label='PFD (dBW/m^2)')
 
+        # Plot any limit lines
+        if self.pfd_limits:
+            x = [p[0] for p in self.pfd_limits]
+            y = [p[1] for p in self.pfd_limits]
+            ax.plot(x, y, color='r', linewidth=2, label='Limit')
+
+
         ax.set_xlabel('Bandwidth (Hz)')
         if self.is_gso:
-            ax.set_ylabel('PFD at GSO(dBW/m^2')
+            ax.set_ylabel('PFD at GSO(dBW/m^2)')
         else:
             ax.set_ylabel('PFD at Receiver (dBW/m^2)')
         if not fname:
@@ -275,8 +292,9 @@ class BitrateFigure(Figure):
     available bitrate.
     """
 
-    def __init__(self, model):
+    def __init__(self, model, title):
         self.model = model
+        self.title = title
 
     def label(self):
         return 'max-bitrate'

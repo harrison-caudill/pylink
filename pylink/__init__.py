@@ -83,5 +83,7 @@ from tributaries.geometry import Geometry
 from tributaries.interconnect import Interconnect
 from tributaries.modulation import Code
 from tributaries.modulation import Modulation
+from tributaries.modulation import NORMAL_DVBS2X_PERFORMANCE
+from tributaries.modulation import PERFECT_DVBS2X_PERFORMANCE
 from tributaries.receiver import Receiver
 from tributaries.transmitter import Transmitter
