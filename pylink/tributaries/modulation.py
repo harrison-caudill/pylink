@@ -62,6 +62,9 @@ NORMAL_DVBS2X_PERFORMANCE = [
     Code("256APSK 3/4", 4.720684, 5.900855, 19.570000),
     ]
 
+PERFECT_DVBS2X_PERFORMANCE = [ Code(c.name, c.rx_eff, c.rx_eff, c.esn0_db)
+                               for c in NORMAL_DVBS2X_PERFORMANCE ]
+
 
 def _modulation_code_lookup_table(model):
     e = model.enum

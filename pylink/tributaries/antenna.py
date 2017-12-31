@@ -297,7 +297,7 @@ class Antenna(object):
         if self._call(model, 'tracking_target'):
             return self._call(model, 'boresight_gain_dbi')
         else:
-            angle = -1 * self._call(model, 'angle_deg')
+            angle = self._call(model, 'angle_deg')
             angles = self._call(model, 'gain_pattern_angles')
             idx = _find_nearest_index(angles, angle)
             pattern = self._call(model, 'gain_pattern')
