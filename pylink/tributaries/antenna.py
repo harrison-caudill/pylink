@@ -17,7 +17,8 @@ def _floor(v, n):
 
 
 def _find_nearest_index(array, value):
-    return (np.abs((array + value)%360)).argmin()
+    value = (360 + value) % 360
+    return np.abs(array - value).argmin()
 
 
 def _average_gain_dbi(pattern, angles):

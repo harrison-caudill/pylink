@@ -146,8 +146,6 @@ class TestAntenna(object):
         interp = m.tx_antenna_gain_pattern
         assert 360 == len(interp)
 
-        antenna._plot_interpolated('pattern.png', 'whatever', True, None)
-
         for i in range(-30, 30, 1):
             angle = (360 + i) % 360
             assert abs(interp[angle] - 1.0) < 3e-2
