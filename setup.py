@@ -2,10 +2,6 @@
 
 from distutils.core import setup
 import os
-from pip.req import parse_requirements
-
-install_reqs = parse_requirements('requirements.txt', session=False)
-reqs = [str(ir.req) for ir in install_reqs]
 
 data_dirs = {'tex': '/usr/local/share/pylink'}
 
@@ -25,8 +21,15 @@ setup(name='pylink',
       author_email='harrison@hypersphere.org',
       license='BSD',
       data_files=data_files,
+      install_requires=[
+          'enum',
+          'matplotlib',
+          'jinja2',
+          'scipy',
+          'numpy',
+          ],
       package_dir={
           'tributaries':'tributaries',
           },
       packages=['pylink', 'pylink.tributaries'])
-#install_requires=reqs,)
+
