@@ -633,7 +633,7 @@ class Report(object):
             ('Receiver', [
                 ('Signal Power Flux at RX Antenna', m.pf_dbw_per_m2, 'dBW/m^2'),
                 ('Antenna Gain', m.rx_antenna_gain_dbi, 'dBi'),
-                ('Antenna Effective Area', m.rx_antenna_effective_area_dbm2, 'dBm'),
+                ('Antenna Effective Area', m.rx_antenna_effective_area_dbm2, 'dBm^2'),
                 ('Polarization Mismatch Loss', m.polarization_mismatch_loss_db, 'dB'),
                 ('RX System Noise Temperature', m.rx_noise_temp_k, 'K'),
                 ('RX Figure of Merit ($G/T$)', m.rx_g_over_t_db, 'dB/K'),

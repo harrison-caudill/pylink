@@ -64,15 +64,7 @@ class DAGModel(object):
         tributes = [m.tribute for m in contrib]
         tributes.append(extras)
         for t in tributes:
-            for name, v, in t.iteritems():
-                node = self._nodes[name]
-                if hasattr(v, '__call__'):
-                    self._calc[node] = v
-                elif isinstance(v, TaggedAttribute):
-                    self._meta[node] = v.meta
-                    self._values[node] = v.value
-                else:
-                    self._values[node] = v
+            self.accept_tribute(t)
 
         # Record the calculation stack for dependency tracking
         self._stack = []
@@ -82,6 +74,25 @@ class DAGModel(object):
         # We start with an empty dependency tree and update as able
         self._deps = {}
         self._map_dependencies()
+
+    def accept_tribute(self, t):
+        for name, v, in t.iteritems():
+            node = self._nodes[name]
+            if hasattr(v, '__call__'):
+                self._calc[node] = v
+            elif isinstance(v, TaggedAttribute):
+                self._meta[node] = v.meta
+                self._values[node] = v.value
+            else:
+                self._values[node] = v
+
+    def clear_cache(self):
+        """Clears the cache.
+
+        Useful if you do something like accept_tribute().  Currently
+        only used in testing.
+        """
+        self._init_cache()
 
     def is_calculated_node(self, node):
         """Determines whether or not the given node is calculated.

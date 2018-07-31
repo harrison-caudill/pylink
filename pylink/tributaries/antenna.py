@@ -17,28 +17,26 @@ def _floor(v, n):
 
 
 def _find_nearest_index(array, value):
-    return (np.abs(array - value)).argmin()
+    return (np.abs((array + value)%360)).argmin()
 
 
 def _average_gain_dbi(pattern, angles):
-    s = 0
-    n = 0
-    for i in range(len(pattern)):
-        angle = angles[i]
-        gain = pattern[i]
-        if angle >= 0 and angle <= 180:
-            s += gain
-            n += 1
-    return s / n
+    return sum(pattern) / float(len(pattern))
 
 
 def _average_nadir_gain_dbi(pattern, angles):
+    """Average gain on the nadir face of the satellite.
+
+    For simplicity, this function assumes some hard-coded values of
+    65-degrees off of boresight.  That translates to 0->65 and (360-65)->360
+    """
     s = 0
     n = 0
+    offset = 65
     for i in range(len(pattern)):
         angle = angles[i]
         gain = pattern[i]
-        if angle >= 25 and angle <= 155:
+        if (0 <= angle <= offset) or ((360-offset) <= angle <= 360):
             s += gain
             n += 1
     return s / n
@@ -84,6 +82,8 @@ class Antenna(object):
             self.peak_gain = gain
             pattern = np.zeros(360)
             pattern += gain
+        else:
+            self.peak_gain = max(pattern)
 
         pattern = np.array(pattern)
 
@@ -116,7 +116,7 @@ class Antenna(object):
             self._name('gain_pattern'): self.interpolated,
             self._name('gain_pattern_angles'): self.interpolated_angles,
             self._name('obj'): self,
-            self._name('tracking_target'): tracking,
+            self._name('tracking_target'): not not tracking,
             self._name('rf_chain'): rf_chain,
             self._name('pointing_loss_db'): pointing_loss_db,
             }

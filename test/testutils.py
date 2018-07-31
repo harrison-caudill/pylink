@@ -36,12 +36,12 @@ perf = [
 @pytest.fixture
 def model():
     return pylink.DAGModel([pylink.Geometry(),
-                            pylink.Antenna(is_rx=True),
+                            pylink.Antenna(is_rx=True, tracking=True),
                             pylink.Interconnect(is_rx=True),
                             pylink.Receiver(),
                             pylink.Transmitter(),
                             pylink.Interconnect(is_rx=False),
-                            pylink.Antenna(is_rx=False),
+                            pylink.Antenna(is_rx=False, tracking=False),
                             pylink.Channel(),
                             pylink.Modulation(name='QPSK', perf=perf),
                             pylink.LinkBudget()])
