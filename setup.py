@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+from setuptools import setup
 import os
 
 data_dirs = {'tex': '/usr/local/share/pylink'}
