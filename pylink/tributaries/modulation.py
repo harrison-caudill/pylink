@@ -100,6 +100,9 @@ def __max_bitrate_hz(model, code, additional_rx_losses_db):
 def _best_modulation_code(model):
     e = model.enum
 
+    if 1 == len(model.modulation_performance_table):
+        return model.modulation_performance_table[0]
+
     def __rate_for(code):
         # DANGER WILL ROBINSON!!
         model.override(e.best_modulation_code, code)
