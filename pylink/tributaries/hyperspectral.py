@@ -103,7 +103,7 @@ class HyperSpectralSNRBudget(object):
 
     def _incident_power_flux_density_dbw_m2_nm(self, model):
         PFD = max(_interpolate(model.lambda_nm,
-                               model.orbital_solar_irradiance_w,
+                               model.ground_solar_irradiance_w,
                                1),
                   1e-10)
         return pylink.to_db(PFD)
