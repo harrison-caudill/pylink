@@ -9,7 +9,7 @@ cur_dir = os.path.dirname(os.path.realpath(__file__))
 
 data_files = []
 
-for srcdir, dst in data_dirs.iteritems():
+for srcdir, dst in data_dirs.items():
     srcpath = os.path.join(cur_dir, srcdir)
     files = [os.path.join(srcdir, f) for f in os.listdir(srcpath)]
     data_files.append((dst, files,))
@@ -22,7 +22,6 @@ setup(name='pylink',
       license='BSD',
       data_files=data_files,
       install_requires=[
-          'enum',
           'matplotlib',
           'jinja2',
           'scipy',

@@ -8,9 +8,10 @@ import re
 import sys
 import tempfile
 import traceback
-import utils
 
-from tagged_attribute import TaggedAttribute
+import pylink.utils
+
+from pylink.tagged_attribute import TaggedAttribute
 
 
 class LoopException(Exception):
