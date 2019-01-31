@@ -1,3 +1,11 @@
+Note to Anyone Reading This
+===========================
+
+I just closed down business operations at BStar and switched over to
+consulting.  I have some time on my hands right now, so feel free to file an
+issue if you have a feature request.
+
+
 Python Link Budget Calculation/Management and General Modelling
 ===============================================================
 
