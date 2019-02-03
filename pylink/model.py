@@ -9,7 +9,7 @@ import sys
 import tempfile
 import traceback
 
-import pylink.utils
+import pylink.utils as utils
 
 from pylink.tagged_attribute import TaggedAttribute
 
@@ -77,7 +77,7 @@ class DAGModel(object):
         self._map_dependencies()
 
     def accept_tribute(self, t):
-        for name, v, in t.iteritems():
+        for name, v, in t.items():
             node = self._nodes[name]
             if hasattr(v, '__call__'):
                 self._calc[node] = v
@@ -436,7 +436,7 @@ class DAGModel(object):
     def export_deps_dot(self):
         retval = ['digraph {']
 
-        for node, deps in self._deps.iteritems():
+        for node, deps in self._deps.items():
             for dep in deps:
                 retval.append('  %s -> %s' % (self.node_name(node),
                                               self.node_name(dep)))
