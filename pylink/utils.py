@@ -23,7 +23,7 @@ def node_associations(enum):
     """
     node_to_name = {}
     name_to_node = {}
-    for key, value, in enum.__dict__.iteritems():
+    for key, value, in enum.__dict__.items():
         if not key.startswith('_'):
             node_to_name[value] = key
             name_to_node[key] = value
