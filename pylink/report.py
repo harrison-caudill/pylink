@@ -1,12 +1,14 @@
 #!/usr/bin/python
 
 import collections
+import distutils.sysconfig
 import jinja2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import site
 
-import pylink.utils
+import pylink.utils as utils
 
 
 class Figure(object):
@@ -720,7 +722,13 @@ class Report(object):
         with open(fname, 'w') as fd:
             fd.write(top.render(**kwargs))
 
-    def _jinja(self, basedir='/usr/local/share/pylink'):
+
+    def _jinja(self, basedir=None):
+        if not basedir:
+            lib = distutils.sysconfig.get_python_lib()
+            rel = 'pylink/tex'
+            basedir = os.path.join(lib, rel)
+
         env = jinja2.Environment(
             block_start_string = '\BLOCK{',
             block_end_string = '}',

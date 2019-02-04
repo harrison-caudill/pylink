@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 import pylink
@@ -19,6 +19,8 @@ for peak in [3, 5, 15]:
                      include_raw=False,
                      title='%ddBi Generated Pattern' % peak,
                      ylim=[null-3, peak+3])
+    print('Pattern Created: %s' % f)
+
 
 
 f = os.path.join(d, 'pattern-manual.png')
@@ -27,3 +29,5 @@ ant = pylink.Antenna(pattern=pattern)
 ant.plot_pattern(f,
                  include_raw=True,
                  title='Manual Pattern')
+print('Pattern Created: %s' % f)
+

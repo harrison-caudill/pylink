@@ -274,7 +274,7 @@ class Antenna(object):
     def _circular_interpolate(self, src, factor):
         tmp = list(src)*3
         tmp = self._linear_interpolate(tmp, factor)
-        l = len(tmp) / 3
+        l = int(len(tmp) / 3)
         return tmp[l:2*l]
 
     def _interpolate_pattern(self, pattern, factor=None):

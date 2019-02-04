@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import pylink
 from pylink import TaggedAttribute as TA
@@ -51,7 +51,7 @@ extras = {'midlife_crisis_car_usd': TA(110e3, model='Tesla P100d'),
 m = pylink.DAGModel([GenericFinancialModel()], **extras)
 e = m.enum
 
-print 'Savings Rate ($/mo):        %3g' % m.savings_usd_per_month
-print 'Cost of Midlife Crisis ($): %3g' % m.midlife_crisis_car_usd
-print 'Car Model:                  %s' % m.get_meta(e.midlife_crisis_car_usd)['model']
-print 'Months to Pay for Crisis:   %d' % round(m.months_to_pay_for_car, 0)
+print('Savings Rate ($/mo):        %3g' % m.savings_usd_per_month)
+print('Cost of Midlife Crisis ($): %3g' % m.midlife_crisis_car_usd)
+print('Car Model:                  %s' % m.get_meta(e.midlife_crisis_car_usd)['model'])
+print('Months to Pay for Crisis:   %d' % round(m.months_to_pay_for_car, 0))

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import cProfile
 import numpy as np
@@ -9,7 +9,6 @@ import os
 import pylink
 
 from eg_budgets import DOWNLINK
-
 
 def main():
     m = DOWNLINK
@@ -53,4 +52,9 @@ def main():
         os.makedirs(d)
     fig.savefig(f)
 
-p = cProfile.run('main()')
+print("""
+cProfile doesn't seem to work right now with anaconda + Python3
+
+https://github.com/harrison-caudill/pylink/issues/31
+""")
+# p = cProfile.run('main()')

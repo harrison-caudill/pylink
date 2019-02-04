@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import pylink
 
@@ -21,7 +21,7 @@ m = pylink.DAGModel([pylink.Geometry(),
                      pylink.LinkBudget()])
 e = m.enum
 
-print 'Link margin in vanilla example: %s' % m.link_margin_db
+print('Link margin in vanilla example: %s' % m.link_margin_db)
 
 # let's override the link_margin_db node in the kwargs
 def _evil_margin_db(model):
@@ -38,7 +38,7 @@ m = pylink.DAGModel([pylink.Geometry(),
                      pylink.LinkBudget()],
                     link_margin_db=_evil_margin_db)
 e = m.enum
-print 'Link margin after overriding the node: %s' % m.link_margin_db
+print('Link margin after overriding the node: %s' % m.link_margin_db)
 
 
 # let's override the link_margin_db node in a tributary
@@ -57,7 +57,7 @@ m = pylink.DAGModel([pylink.Geometry(),
                      pylink.LinkBudget(),
                      EvilMargin()])
 e = m.enum
-print 'Link margin after a tributary-override: %s' % m.link_margin_db
+print('Link margin after a tributary-override: %s' % m.link_margin_db)
 
 
 # let's be evil dunces and have our evil function overridden by the
@@ -74,4 +74,4 @@ m = pylink.DAGModel([pylink.Geometry(),
                      EvilMargin(),
                      pylink.LinkBudget()])
 e = m.enum
-print 'Link margin after a failed tributary-override: %s' % m.link_margin_db
+print('Link margin after a failed tributary-override: %s' % m.link_margin_db)
