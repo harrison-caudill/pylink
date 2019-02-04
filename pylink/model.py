@@ -51,7 +51,8 @@ class DAGModel(object):
 
         # calculate the list of node names & enum
         names = []
-        map(lambda x: names.extend(x.tribute.keys()), contrib)
+        for mod in contrib:
+            names += mod.tribute.keys()
         names.extend(extras.keys())
         self.enum = utils.sequential_enum(*names)
 
@@ -339,7 +340,7 @@ class DAGModel(object):
         best_val = start
         best_diff = abs(fixed_value - self.cached_calculate(fixed))
 
-        for i in xrange(0, int((stop-start)/step), 1):
+        for i in range(0, int((stop-start)/step), 1):
             val = start + step*i
             self.override(var, val)
             diff = abs(fixed_value - self.cached_calculate(fixed))

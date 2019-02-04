@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import pylink
 
@@ -15,8 +15,8 @@ def _raises_exception(model):
 extras = {'raises_exception': _raises_exception}
 m = pylink.DAGModel([], **extras)
 
-print "="*80
-print 'AttributeError will be raised'
-print "We're asking for a node that doesn't exist"
-print "="*80
-print m.raises_exception
+print("="*80)
+print('AttributeError will be raised')
+print("We're asking for a node that doesn't exist")
+print("="*80)
+print(m.raises_exception)

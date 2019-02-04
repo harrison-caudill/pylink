@@ -3,7 +3,7 @@
 from setuptools import setup
 import os
 
-data_dirs = {'tex': '/usr/local/share/pylink'}
+data_dirs = {'tex': '/pylink/tex'}
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 

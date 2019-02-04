@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 
@@ -25,20 +25,20 @@ m.override(e.implementation_loss_db, 1)
 
 # Observe the best code option
 code = m.best_modulation_code
-print "=== Modulation: %s ===" % m.modulation_name
-print "  Code:                         %s" % code.name
-print "  Transmit Spectral Efficiency: %f" % code.tx_eff
-print "  Receive Spectral Efficiency:  %f" % code.rx_eff
-print "  Required Es/N0:               %f" % code.esn0_db
-print "  Required Eb/N0:               %f" % code.req_demod_ebn0_db()
+print("=== Modulation: %s ===" % m.modulation_name)
+print("  Code:                         %s" % code.name)
+print("  Transmit Spectral Efficiency: %f" % code.tx_eff)
+print("  Receive Spectral Efficiency:  %f" % code.rx_eff)
+print("  Required Es/N0:               %f" % code.esn0_db)
+print("  Required Eb/N0:               %f" % code.ebn0_db)
 
-print ""
-print "=== System ==="
-print "  Transmit Spectral Efficiency: %f" % m.tx_spectral_efficiency_bps_per_hz
-print "  Receive Spectral Efficiency:  %f" % m.rx_spectral_efficiency_bps_per_hz
-print "  Required Demod Eb/N0:         %f" % m.required_demod_ebn0_db
-print "  Implementation Losses:        %f" % m.implementation_loss_db
-print "  Required Eb/N0:               %f" % m.required_ebn0_db
+print("")
+print("=== System ===")
+print("  Transmit Spectral Efficiency: %f" % m.tx_spectral_efficiency_bps_per_hz)
+print("  Receive Spectral Efficiency:  %f" % m.rx_spectral_efficiency_bps_per_hz)
+print("  Required Demod Eb/N0:         %f" % m.required_demod_ebn0_db)
+print("  Implementation Losses:        %f" % m.implementation_loss_db)
+print("  Required Eb/N0:               %f" % m.required_ebn0_db)
 
-print ""
-print "Note how the transmit and receive spectral efficiencies are different."
+print("")
+print("Note how the transmit and receive spectral efficiencies are different.")
