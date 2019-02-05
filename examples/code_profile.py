@@ -33,7 +33,7 @@ def main():
     y = np.linspace(10.0, 90.0)
     for i in range(len(x)):
         m.override(e.min_elevation_deg, x[i])
-        y[i] = m.pfd_dbw_per_m2_per_4khz
+        y[i] = m.pfd_dbw_per_m2_per_hz
 
     low = min(min(y), min([v[1] for v in restrictions]))
     hi = max(max(y), max([v[1] for v in restrictions]))
@@ -52,9 +52,4 @@ def main():
         os.makedirs(d)
     fig.savefig(f)
 
-print("""
-cProfile doesn't seem to work right now with anaconda + Python3
-
-https://github.com/harrison-caudill/pylink/issues/31
-""")
-# p = cProfile.run('main()')
+p = cProfile.run('main()')
