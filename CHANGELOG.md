@@ -1,3 +1,11 @@
+`0.3 -> 0.4`
+============
+
+There were a number of minor changes, but mostly it was updated to
+work properly with Python3 and Anaconda.  I've switched to using
+Python 3.7 in Anaconda as my primary dev environment.
+
+
 `0.2 -> 0.3`
 ============
 

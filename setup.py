@@ -15,7 +15,7 @@ for srcdir, dst in data_dirs.items():
     data_files.append((dst, files,))
 
 setup(name='pylink',
-      version='0.3',
+      version='0.4',
       description='Python Link Budget System',
       author='Harrison Caudill',
       author_email='harrison@hypersphere.org',
