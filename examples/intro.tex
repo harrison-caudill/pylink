@@ -1,0 +1,24 @@
+
+This is a basic title and intro section.  We're doing this all via the
+\LaTeX import directive, so you can put whatever you want here.  It
+might be a good place for stating the purpose of this interference
+analysis.
+
+\newpage
+
+Please take note of Figure \ref{fig::pfd::pfd-canonical-4kHz} vs
+\ref{fig::pfd::pfd-expected-4kHz}.  The reason you see just a stark
+difference between the 'Peak' and 'Expected' is that the assumed ACM
+in PyLink automatically adjusts to the appropriate modcode and selects
+it based upon the transmit efficiency, rather than the receive
+efficiency.  Because rolloff may affect the transmitters ability to
+operate legally next to a sensitive band (cough DSN cough), the
+transmit spectral efficiency and the receive spectral efficiency are
+separated.
+
+To avoid regulatory issues, it may be advisable to utilize less BW
+than is allocated, whereas the canonical figure (Figure
+\ref{fig::pfd::pfd-canonical-4kHz}) assumes full use of the entire
+allocation.  As a consequence, the PFD in the expected case is
+actually higher, because the utilized bandwidth is actually lower,
+because it isn't safe to use the entire bandwidth.
