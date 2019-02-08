@@ -49,7 +49,7 @@ human_m
 
 __title__ = 'pylink'
 __author__ = 'Harrison Caudill <harrison@hypersphere.org>'
-__version__ = '0.3'
+__version__ = '0.5'
 __license__ = 'BSD'
 
 

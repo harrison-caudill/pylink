@@ -93,3 +93,4 @@ ENV/
 \#*\#
 *~
 .pytest_cache
+Pipfile*

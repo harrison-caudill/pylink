@@ -6,6 +6,14 @@ consulting.  I have some time on my hands right now, so feel free to file an
 issue if you have a feature request.
 
 
+PyPi Naming
+===========
+
+Please note that there is already a `pylink` package on PyPi, so it is
+currently registered as `pylink-satcom`.  I'll repeat this warning in
+the `Installation` section below.
+
+
 Python Link Budget Calculation/Management and General Modelling
 ===============================================================
 
@@ -70,7 +78,7 @@ def _link_margin_db(model):
 my_example = pylink.DAGModel(received_ebn0_db=8.0,
                              required_ebn0_db=6.0,
                              link_margin_db=_link_margin_db)
-print 'My Example Link Margin: ', my_example.link_margin_db
+print('My Example Link Margin: ', my_example.link_margin_db)
 ```
 
 The DAGModel class overrides python's `__getattr__` method so that you
@@ -104,9 +112,9 @@ my_example = pylink.DAGModel(received_ebn0_db=8.0,
 m = my_example # m as in model
 e = m.enum     # e as in enum
 
-print e.link_margin_db
-print m.node_name(e.link_margin_db)
-print m.node_number('link_margin_db') # the alternative to using the enum
+print(e.link_margin_db)
+print(m.node_name(e.link_margin_db))
+print(m.node_num('link_margin_db')) # the alternative to using the enum
 ```
 
 It also includes a multi-round linear solver for convenience.  See the
@@ -159,35 +167,14 @@ whether to use the tx or rx path.
 Installation
 =============
 
- * `pip install .`
+Please note that there is a name collision with another `pylink`
+package in PyPi.  As such, we have registered this package there under
+a different name: `pylink-satcom`.
 
+We recommend using Anaconda with Python 3.7.  This package can be
+installed by executing: `pip install pylink-satcom`
 
-Please note that in some cases, matplotlib's fonts can be problematic
-(issue #2919).  If that happens, you can fix it with:
-
-```d=${HOME}/.matplotlib; mkdir -p ${d} ; cd ${d} ; fc-list```
-
-Please also note that recently (at the time of this writing) there has
-been an issue where python displays a series of warnings about
-potential ABI compatibility issues:
-
-```
-/home/kungfoo/.conda/dev/lib/python2.7/site-packages/scipy/linalg/basic.py:17: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
-  from ._solve_toeplitz import levinson
-/home/kungfoo/.conda/dev/lib/python2.7/site-packages/scipy/linalg/__init__.py:207: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
-  from ._decomp_update import *
-...
-```
-
-It is expected to be benign, and little more than spam.  It is being
-actively (at this time) discussed, referenced by tickets in
-[scipy](https://github.com/scipy/scipy/issues/6587), and
-[numpy](https://github.com/numpy/numpy/pull/11634), and will probably
-be resolved shortly.
-
-If it really annoys you, the easiest remediation is either to
-downgrade `numpy` or build `scipy` from
-[source](https://scipy.github.io/devdocs/building/macosx.html).
+If you want to install it from source: `pip install .` works as well.
 
 
 Legacy Support
@@ -195,6 +182,7 @@ Legacy Support
 
 Migration instructions from previous versions can be found in the
 [Changelog](CHANGELOG.md).
+
 
 Extending and Understanding
 ===========================

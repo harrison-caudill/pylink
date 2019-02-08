@@ -428,9 +428,9 @@ class Report(object):
         else:
             retval = m.peak_pf_dbw_per_m2
 
-        pfd_per_hz = retval - m.required_bw_dbhz
+        pfd_per_hz = retval - m.required_rx_bw_dbhz
         if bw:
-            retval = pfd_per_hz + min(utils.to_db(bw), m.required_bw_dbhz)
+            retval = pfd_per_hz + min(utils.to_db(bw), m.required_rx_bw_dbhz)
             (bw, bw_unit,) = utils.human_hz(bw)
             if is_gso:
                 label = 'Peak PFD at GSO per %.2g%s' % (bw, bw_unit)
