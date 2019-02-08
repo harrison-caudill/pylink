@@ -1,3 +1,20 @@
+`0.5 -> 0.6`
+============
+
+The HyperSpectral Imaging code was integrated here.  I know that it
+doesn't really belong, and I should probably separate everything out
+into 3 packages (DAG, link budgets, and hyperspectral)...but until
+someone cares or there's a reason other than principle I'll wait.
+
+
+`0.4 -> 0.5`
+============
+
+The package was published on PyPi here.  The main change was that it
+was published under the title `pylink-satcom` since there was a name
+collision in the PyPi index.
+
+
 `0.3 -> 0.4`
 ============
 

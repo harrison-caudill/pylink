@@ -305,3 +305,15 @@ def _cycle_inducement(model):
 ```
 
 You can also find a unit-test of this behavior in `model_test.py`.
+
+
+HyperSpectral Imaging
+=====================
+
+BStar pivoted to HyperSpectral in an attempt to address the disparity
+between customer/partner/regulator interest in our success and
+investor interest.  HyperSpectral Imaging was the selected target (due
+to the close association with comms and the simplicity of the business
+model).  For expediency, the HSI SNR budget was computed using pylink,
+and I'm adding it to the repo to avoid having yet-another-repo.  If it
+gathers enough steam, I'll break it out into a separate repo.
