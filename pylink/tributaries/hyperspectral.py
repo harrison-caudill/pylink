@@ -12,14 +12,14 @@ def _interpolate(tgt, vals, off):
     def __search(tgt, vals):
         low = 0
         hi = len(vals)
-        cur = hi/2
+        cur = int(hi/2)
         while (hi - low) > 1:
             if vals[cur][0] > tgt:
                 hi = cur
-                cur = low + (cur - low)/2
+                cur = int(low + (cur - low)/2)
             elif vals[cur][0] < tgt:
                 low = cur
-                cur = cur + (hi - cur)/2
+                cur = int(cur + (hi - cur)/2)
             elif vals[cur][0] == tgt:
                 return cur
         return low

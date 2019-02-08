@@ -4,10 +4,11 @@ import argparse
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pylink
 
 
-def _load_irradiance(path):
+def _load_irradiance(path, n=1):
     with open(path, 'r') as csvfile:
         reader = csv.reader(csvfile)
         header = None
@@ -16,7 +17,8 @@ def _load_irradiance(path):
             if not header:
                 header = row
             else:
-                lam, irradiance = row
+                lam = row[0]
+                irradiance = row[n]
                 tmp.append([lam, irradiance])
     retval = np.zeros((len(tmp), 2,))
     for i in range(len(tmp)):
@@ -89,25 +91,22 @@ def plot_snr(model,
 
 
     fig.legend()
+
+    print('Plotting SNR for %dnm-%dnm in %s' % (
+        start_nm, end_nm, path))
     fig.savefig(path)
 
 
 if __name__ == '__main__':
     desc = """Builds an Example SNR Budget
 
-The CSV files for both extra-atmospheric solar irradiance as well as
-the irradiance at the ground must both be provided because the ASTM
-requires a license for its use.  If anyone has a version that can be
-included in PyLink for free, please pass it along to the author.
-Otherwise, you can buy a copy from here:
+Here we use ASTM G173-03 Reference Spectra Derived from SMARTS
+v. 2.9.2
 
-https://www.astm.org/Standards/G173.htm
+The original html file (included in the repository) was obtained on
+Friday, February 8th from
+https://rredc.nrel.gov/solar//spectra/am1.5/ASTMG173.html
 
-The CSV files should be of the form (including the header row):
-
-lambda, irradiance,
-280.0,2e-26
-...
 
 """
     parser = argparse.ArgumentParser(description=desc)
@@ -118,8 +117,17 @@ lambda, irradiance,
                         dest='atmo_path',
                         required=False,
                         type=str,
-                        default='atmospheric_irradiance.csv',
+                        default='astmg173.csv',
                         help='Full input path for the atmospheric irradiance CSV file',)
+
+    parser.add_argument('--atmosphere-irradiance-index', '-A',
+                        metavar='ATMOSPHERE_IRRADIANCE_INDEX',
+                        action='store',
+                        dest='atmo_index',
+                        required=False,
+                        type=int,
+                        default=1,
+                        help='Index into CSV for the atmospheric irradiance',)
 
     parser.add_argument('--ground-irradiance-csv', '-g',
                         metavar='GROUND_IRRADIANCE_CSV',
@@ -127,13 +135,22 @@ lambda, irradiance,
                         dest='ground_path',
                         required=False,
                         type=str,
-                        default='ground_irradiance.csv',
+                        default='astmg173.csv',
                         help='Full input path for the ground irradiance CSV file',)
+
+    parser.add_argument('--ground-irradiance-index', '-G',
+                        metavar='GROUND_IRRADIANCE_INDEX',
+                        action='store',
+                        dest='ground_index',
+                        required=False,
+                        type=int,
+                        default=3,
+                        help='Index into the CSV for the ground irradiance',)
 
     args = parser.parse_args()
 
-    atmo_irradiance = _load_irradiance(args.atmo_path)
-    ground_irradiance = _load_irradiance(args.ground_path)
+    atmo_irradiance = _load_irradiance(args.atmo_path, args.atmo_index)
+    ground_irradiance = _load_irradiance(args.ground_path, args.ground_index)
 
     budget = pylink.HyperSpectralSNRBudget(atmo_irradiance, ground_irradiance)
 
@@ -144,4 +161,10 @@ lambda, irradiance,
     m = pylink.DAGModel([budget, geometry])
     e = m.enum
 
-    plot_snr(m, start_nm=400,  end_nm=1400,  path='snr-vnir.png')
+    output_dir = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'export')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    path = os.path.join(output_dir, 'snr-vnir.png')
+    plot_snr(m, start_nm=400,  end_nm=1400,  path=path)
