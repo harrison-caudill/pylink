@@ -49,7 +49,7 @@ human_m
 
 __title__ = 'pylink'
 __author__ = 'Harrison Caudill <harrison@hypersphere.org>'
-__version__ = '0.5'
+__version__ = '0.6'
 __license__ = 'BSD'
 
 
@@ -75,7 +75,6 @@ from pylink.utils import human_hz
 from pylink.utils import human_m
 from pylink.utils import human_b
 
-
 from pylink.tributaries.antenna import Antenna
 from pylink.tributaries.budget import LinkBudget
 from pylink.tributaries.channel import Channel
@@ -87,3 +86,4 @@ from pylink.tributaries.modulation import NORMAL_DVBS2X_PERFORMANCE
 from pylink.tributaries.modulation import PERFECT_DVBS2X_PERFORMANCE
 from pylink.tributaries.receiver import Receiver
 from pylink.tributaries.transmitter import Transmitter
+from pylink.tributaries.hyperspectral import HyperSpectralSNRBudget
