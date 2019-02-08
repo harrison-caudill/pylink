@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import pylink
 
@@ -18,29 +18,29 @@ m = pylink.DAGModel(the_answer=42,
                     the_answer_plus_two=_the_answer_plus_two)
 e = m.enum
 
-print 'The original answer:', m.the_answer
-print 'Overriding the Answer to 24'
+print('The original answer:', m.the_answer)
+print('Overriding the Answer to 24')
 m.override(e.the_answer, 24)
-print 'The new answer:', m.the_answer
-print 'The override value:', m.override_value(e.the_answer)
+print('The new answer:', m.the_answer)
+print('The override value:', m.override_value(e.the_answer))
 
-print ''
+print('')
 
-print '"Reverting" the override is illegal, since it is a static value'
+print('"Reverting" the override is illegal, since it is a static value')
 try:
     m.revert(e.the_answer)
-except AttributeError, err:
-    print 'Caught an AttributeError: "%s"' % err
+except AttributeError as err:
+    print('Caught an AttributeError: "%s"' % err)
 
-print ''
+print('')
 
-print 'If, however, you wanted to do that with a calculated node:'
-print 'The original answer:', m.the_calculated_answer
-print 'Overriding the Answer to 24'
+print('If, however, you wanted to do that with a calculated node:')
+print('The original answer:', m.the_calculated_answer)
+print('Overriding the Answer to 24')
 m.override(e.the_calculated_answer, 24)
-print 'The new "calculated" answer:', m.the_calculated_answer
-print 'The override value:', m.override_value(e.the_calculated_answer)
-print 'Reverting'
+print('The new "calculated" answer:', m.the_calculated_answer)
+print('The override value:', m.override_value(e.the_calculated_answer))
+print('Reverting')
 m.revert(e.the_calculated_answer)
-print 'The override value after clearing:', m.override_value(e.the_calculated_answer)
-print 'The answer after clearing the override:', m.the_calculated_answer
+print('The override value after clearing:', m.override_value(e.the_calculated_answer))
+print('The answer after clearing the override:', m.the_calculated_answer)

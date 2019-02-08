@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 import shutil
@@ -44,7 +44,7 @@ gs_rf_chain = [
 
 geometry = pylink.Geometry(apoapsis_altitude_km=550,
                            periapsis_altitude_km=500,
-                           min_elevation_deg=10)
+                           min_elevation_deg=20)
 
 sat_rx_antenna = pylink.Antenna(gain=3,
                                 polarization='RHCP',
@@ -53,13 +53,13 @@ sat_rx_antenna = pylink.Antenna(gain=3,
                                 is_rx=True,
                                 tracking=False)
 
-sat_tx_antenna = pylink.Antenna(gain=1,
+sat_tx_antenna = pylink.Antenna(gain=3,
                                 polarization='RHCP',
                                 pattern=sat_pattern,
                                 is_rx=False,
                                 tracking=False)
 
-gs_rx_antenna = pylink.Antenna(gain=25,
+gs_rx_antenna = pylink.Antenna(pattern=pylink.pattern_generator(48),
                                rx_noise_temp_k=300,
                                polarization='RHCP',
                                is_rx=True,
@@ -81,7 +81,7 @@ gs_transmitter = pylink.Transmitter(tx_power_at_pa_dbw=23,
                                     name='Ground SBand Transmitter')
 
 sat_transmitter = pylink.Transmitter(tx_power_at_pa_dbw=1.5,
-                                     name='Satellite SBand Transmitter')
+                                     name='Satellite XBand Transmitter')
 
 rx_interconnect = pylink.Interconnect(is_rx=True)
 
@@ -89,14 +89,23 @@ rx_interconnect = pylink.Interconnect(is_rx=True)
 tx_interconnect = pylink.Interconnect(is_rx=False)
 
 
-channel = pylink.Channel(bitrate_hz=500e3,
-                         allocation_hz=5e6,
-                         center_freq_mhz=2022.5,
-                         atmospheric_loss_db=.5,
-                         ionospheric_loss_db=.5,
-                         rain_loss_db=1,
-                         multipath_fading_db=0,
-                         polarization_mismatch_loss_db=3)
+x_channel = pylink.Channel(bitrate_hz=1e6,
+                           allocation_hz=500e4,
+                           center_freq_mhz=8200,
+                           atmospheric_loss_db=1,
+                           ionospheric_loss_db=1,
+                           rain_loss_db=2,
+                           multipath_fading_db=0,
+                           polarization_mismatch_loss_db=3)
+
+s_channel = pylink.Channel(bitrate_hz=500e3,
+                           allocation_hz=5e6,
+                           center_freq_mhz=2022.5,
+                           atmospheric_loss_db=.5,
+                           ionospheric_loss_db=.5,
+                           rain_loss_db=1,
+                           multipath_fading_db=0,
+                           polarization_mismatch_loss_db=3)
 
 # defaults to DVB-S2X
 modulation = pylink.Modulation()
@@ -106,11 +115,11 @@ DOWNLINK = pylink.DAGModel([geometry,
                             sat_transmitter,
                             sat_tx_antenna,
                             gs_receiver,
-                            channel,
+                            x_channel,
                             rx_interconnect,
                             tx_interconnect,
                             modulation,
-                            pylink.LinkBudget(name='Example SBand Downlink',
+                            pylink.LinkBudget(name='Example XBand Downlink',
                                               is_downlink=True)])
 
 UPLINK = pylink.DAGModel([geometry,
@@ -118,6 +127,6 @@ UPLINK = pylink.DAGModel([geometry,
                           sat_receiver,
                           gs_transmitter,
                           gs_tx_antenna,
-                          channel,
+                          s_channel,
                           pylink.LinkBudget(name='Example SBand Uplink',
                                             is_downlink=False)])

@@ -8,9 +8,10 @@ import re
 import sys
 import tempfile
 import traceback
-import utils
 
-from tagged_attribute import TaggedAttribute
+import pylink.utils as utils
+
+from pylink.tagged_attribute import TaggedAttribute
 
 
 class LoopException(Exception):
@@ -50,7 +51,8 @@ class DAGModel(object):
 
         # calculate the list of node names & enum
         names = []
-        map(lambda x: names.extend(x.tribute.keys()), contrib)
+        for mod in contrib:
+            names += mod.tribute.keys()
         names.extend(extras.keys())
         self.enum = utils.sequential_enum(*names)
 
@@ -76,7 +78,7 @@ class DAGModel(object):
         self._map_dependencies()
 
     def accept_tribute(self, t):
-        for name, v, in t.iteritems():
+        for name, v, in t.items():
             node = self._nodes[name]
             if hasattr(v, '__call__'):
                 self._calc[node] = v
@@ -338,7 +340,7 @@ class DAGModel(object):
         best_val = start
         best_diff = abs(fixed_value - self.cached_calculate(fixed))
 
-        for i in xrange(0, int((stop-start)/step), 1):
+        for i in range(0, int((stop-start)/step), 1):
             val = start + step*i
             self.override(var, val)
             diff = abs(fixed_value - self.cached_calculate(fixed))
@@ -435,7 +437,7 @@ class DAGModel(object):
     def export_deps_dot(self):
         retval = ['digraph {']
 
-        for node, deps in self._deps.iteritems():
+        for node, deps in self._deps.items():
             for dep in deps:
                 retval.append('  %s -> %s' % (self.node_name(node),
                                               self.node_name(dep)))

@@ -1,12 +1,14 @@
 #!/usr/bin/python
 
 import collections
+import distutils.sysconfig
 import jinja2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import site
 
-import utils
+import pylink.utils as utils
 
 
 class Figure(object):
@@ -426,9 +428,9 @@ class Report(object):
         else:
             retval = m.peak_pf_dbw_per_m2
 
-        pfd_per_hz = retval - m.required_bw_dbhz
+        pfd_per_hz = retval - m.required_rx_bw_dbhz
         if bw:
-            retval = pfd_per_hz + min(utils.to_db(bw), m.required_bw_dbhz)
+            retval = pfd_per_hz + min(utils.to_db(bw), m.required_rx_bw_dbhz)
             (bw, bw_unit,) = utils.human_hz(bw)
             if is_gso:
                 label = 'Peak PFD at GSO per %.2g%s' % (bw, bw_unit)
@@ -720,7 +722,13 @@ class Report(object):
         with open(fname, 'w') as fd:
             fd.write(top.render(**kwargs))
 
-    def _jinja(self, basedir='/usr/local/share/pylink'):
+
+    def _jinja(self, basedir=None):
+        if not basedir:
+            lib = distutils.sysconfig.get_python_lib()
+            rel = 'pylink/tex'
+            basedir = os.path.join(lib, rel)
+
         env = jinja2.Environment(
             block_start_string = '\BLOCK{',
             block_end_string = '}',

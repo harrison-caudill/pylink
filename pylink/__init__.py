@@ -49,42 +49,41 @@ human_m
 
 __title__ = 'pylink'
 __author__ = 'Harrison Caudill <harrison@hypersphere.org>'
-__version__ = '0.3'
-__copyright__ = 'Copyright 2016, Spire Global Inc, All Rights Reserved'
+__version__ = '0.5'
+__license__ = 'BSD'
 
 
-from element import Element
-from model import DAGModel
-from model import LoopException
-from report import BitrateFigure
-from report import CanonicalPFDFigure
-from report import ExpectedPFDFigure
-from report import PFDvsBWFigure
-from report import BitrateFigure
-from report import Report
-from tagged_attribute import TaggedAttribute
-from utils import to_db
-from utils import from_db
-from utils import spreading_loss_db
-from utils import pattern_generator
-from utils import rx_pfd_hz_adjust
-from utils import tx_pfd_hz_adjust
-from utils import e_field_to_eirp_dbw
-from utils import eirp_dbw_to_e_field_v_per_m
-from utils import human_hz
-from utils import human_m
-from utils import human_b
+from pylink.element import Element
+from pylink.model import DAGModel
+from pylink.model import LoopException
+from pylink.report import BitrateFigure
+from pylink.report import CanonicalPFDFigure
+from pylink.report import ExpectedPFDFigure
+from pylink.report import PFDvsBWFigure
+from pylink.report import BitrateFigure
+from pylink.report import Report
+from pylink.tagged_attribute import TaggedAttribute
+from pylink.utils import to_db
+from pylink.utils import from_db
+from pylink.utils import spreading_loss_db
+from pylink.utils import pattern_generator
+from pylink.utils import rx_pfd_hz_adjust
+from pylink.utils import tx_pfd_hz_adjust
+from pylink.utils import e_field_to_eirp_dbw
+from pylink.utils import eirp_dbw_to_e_field_v_per_m
+from pylink.utils import human_hz
+from pylink.utils import human_m
+from pylink.utils import human_b
 
-
-from tributaries.antenna import Antenna
-from tributaries.budget import LinkBudget
-from tributaries.channel import Channel
-from tributaries.geometry import Geometry
-from tributaries.interconnect import Interconnect
-from tributaries.modulation import Code
-from tributaries.modulation import Modulation
-from tributaries.modulation import NORMAL_DVBS2X_PERFORMANCE
-from tributaries.modulation import PERFECT_DVBS2X_PERFORMANCE
-from tributaries.receiver import Receiver
-from tributaries.transmitter import Transmitter
-from tributaries.hyperspectral import HyperSpectralSNRBudget
+from pylink.tributaries.antenna import Antenna
+from pylink.tributaries.budget import LinkBudget
+from pylink.tributaries.channel import Channel
+from pylink.tributaries.geometry import Geometry
+from pylink.tributaries.interconnect import Interconnect
+from pylink.tributaries.modulation import Code
+from pylink.tributaries.modulation import Modulation
+from pylink.tributaries.modulation import NORMAL_DVBS2X_PERFORMANCE
+from pylink.tributaries.modulation import PERFECT_DVBS2X_PERFORMANCE
+from pylink.tributaries.receiver import Receiver
+from pylink.tributaries.transmitter import Transmitter
+from pylink.tributaries.hyperspectral import HyperSpectralSNRBudget
