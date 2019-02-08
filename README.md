@@ -6,6 +6,14 @@ consulting.  I have some time on my hands right now, so feel free to file an
 issue if you have a feature request.
 
 
+PyPi Naming
+===========
+
+Please note that there is already a `pylink` package on PyPi, so it is
+currently registered as `pylink-satcom`.  I'll repeat this warning in
+the `Installation` section below.
+
+
 Python Link Budget Calculation/Management and General Modelling
 ===============================================================
 
@@ -159,16 +167,22 @@ whether to use the tx or rx path.
 Installation
 =============
 
-We recommend using Anaconda with Python 3.7
+Please note that there is a name collision with another `pylink`
+package in PyPi.  As such, we have registered this package there under
+a different name: `pylink-satcom`.
 
- * `pip install .`
- * 
+We recommend using Anaconda with Python 3.7.  This package can be
+installed by executing: `pip install pylink-satcom`
+
+If you want to install it from source: `pip install .` works as well.
+
 
 Legacy Support
 ==============
 
 Migration instructions from previous versions can be found in the
 [Changelog](CHANGELOG.md).
+
 
 Extending and Understanding
 ===========================
