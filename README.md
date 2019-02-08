@@ -106,7 +106,7 @@ e = m.enum     # e as in enum
 
 print(e.link_margin_db)
 print(m.node_name(e.link_margin_db))
-print(m.node_number('link_margin_db')) # the alternative to using the enum
+print(m.node_num('link_margin_db')) # the alternative to using the enum
 ```
 
 It also includes a multi-round linear solver for convenience.  See the
@@ -159,36 +159,10 @@ whether to use the tx or rx path.
 Installation
 =============
 
+We recommend using Anaconda with Python 3.7
+
  * `pip install .`
-
-
-Please note that in some cases, matplotlib's fonts can be problematic
-(issue #2919).  If that happens, you can fix it with:
-
-```d=${HOME}/.matplotlib; mkdir -p ${d} ; cd ${d} ; fc-list```
-
-Please also note that recently (at the time of this writing) there has
-been an issue where python displays a series of warnings about
-potential ABI compatibility issues:
-
-```
-/home/kungfoo/.conda/dev/lib/python2.7/site-packages/scipy/linalg/basic.py:17: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
-  from ._solve_toeplitz import levinson
-/home/kungfoo/.conda/dev/lib/python2.7/site-packages/scipy/linalg/__init__.py:207: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
-  from ._decomp_update import *
-...
-```
-
-It is expected to be benign, and little more than spam.  It is being
-actively (at this time) discussed, referenced by tickets in
-[scipy](https://github.com/scipy/scipy/issues/6587), and
-[numpy](https://github.com/numpy/numpy/pull/11634), and will probably
-be resolved shortly.
-
-If it really annoys you, the easiest remediation is either to
-downgrade `numpy` or build `scipy` from
-[source](https://scipy.github.io/devdocs/building/macosx.html).
-
+ * 
 
 Legacy Support
 ==============
