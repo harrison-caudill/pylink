@@ -70,7 +70,7 @@ def _link_margin_db(model):
 my_example = pylink.DAGModel(received_ebn0_db=8.0,
                              required_ebn0_db=6.0,
                              link_margin_db=_link_margin_db)
-print 'My Example Link Margin: ', my_example.link_margin_db
+print('My Example Link Margin: ', my_example.link_margin_db)
 ```
 
 The DAGModel class overrides python's `__getattr__` method so that you
@@ -104,9 +104,9 @@ my_example = pylink.DAGModel(received_ebn0_db=8.0,
 m = my_example # m as in model
 e = m.enum     # e as in enum
 
-print e.link_margin_db
-print m.node_name(e.link_margin_db)
-print m.node_number('link_margin_db') # the alternative to using the enum
+print(e.link_margin_db)
+print(m.node_name(e.link_margin_db))
+print(m.node_number('link_margin_db')) # the alternative to using the enum
 ```
 
 It also includes a multi-round linear solver for convenience.  See the
