@@ -18,7 +18,7 @@ for srcdir, dst in data_dirs.items():
     data_files.append((dst, files,))
 
 setup(
-    name='pylink',
+    name='pylink-satcom',
     version='0.5',
     author='Harrison Caudill',
     author_email='harrison@hypersphere.org',
