@@ -9,7 +9,7 @@ cur_dir = os.path.dirname(os.path.realpath(__file__))
 
 data_files = []
 
-with open(os.path.join(cur_dir, 'README.md', 'r')) as fh:
+with open(os.path.join(cur_dir, 'README.md'), 'r') as fh:
     long_description = fh.read()
 
 for srcdir, dst in data_dirs.items():
