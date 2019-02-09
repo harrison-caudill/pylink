@@ -72,10 +72,12 @@ def human_b(bytes):
     Just to be clear, this will use the 1024 versions, not the 1000
     versions.
     """
-    suffixes = ['TB', 'GB', 'MB', 'kB']
-    for i in range(4):
-        m = 1<<(10*(4-i))
+    suffixes = ['EB', 'PB', 'TB', 'GB', 'MB', 'kB']
+    n = len(suffixes)
+    for i in range(n):
+        m = 1<<(10*(n-i))
         if bytes > m:
+            print(math.log(bytes, 2), bytes / float(m), suffixes[i])
             return (bytes / float(m), suffixes[i])
     return (bytes, 'B')
 
