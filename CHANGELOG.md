@@ -1,3 +1,11 @@
+`0.6 -> 0.7`
+============
+
+Windows support was added.  It actually took shockingly little effort.
+Tests pass, LaTeX and image generation works.  I also added expanded
+`human_b` support as well as an actual unit-test for `human_b`.
+
+
 `0.5 -> 0.6`
 ============
 

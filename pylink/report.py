@@ -21,13 +21,16 @@ class Figure(object):
         if not fname:
             fname = self.fname()
 
+        # LaTeX does NOT play nicely with backslashes in windows
+        path = os.path.join(dname, fname).replace('\\', '/')
+
         return '''
   \\begin{figure}
     \\caption{%s}
     \\includegraphics[width=\\linewidth]{%s}
     \\label{fig::pfd::%s}
   \\end{figure}
-        ''' % (self.caption(), os.path.join(dname, fname), self.label())
+        ''' % (self.caption(), path, self.label())
 
     def _plot_vs_el(self, y_func, dname='.', fname=None):
         m = self.model

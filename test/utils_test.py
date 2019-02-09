@@ -35,7 +35,7 @@ class TestUtils(object):
                      1.1e8:  (110.0, 'MHz'),
                      1.1e9:  (1.1,   'GHz'),
                      1.1e10: (11.0,  'GHz'),
-                     1.1e11: (110.0, 'GHz')}.iteritems():
+                     1.1e11: (110.0, 'GHz')}.items():
             good = s
             questionable = pylink.human_hz(v)
             assert abs(good[0] - questionable[0]) < 1e-6
@@ -50,11 +50,45 @@ class TestUtils(object):
                      1.1e1:  (11.0,  'm'),
                      1.1e2:  (110.0, 'm'),
                      1.1e3:  (1.1,   'km'),
-                     1.1e4:  (11.0,  'km'),}.iteritems():
+                     1.1e4:  (11.0,  'km'),}.items():
             good = s
             questionable = pylink.human_m(v)
             assert abs(good[0] - questionable[0]) < 1e-6
             assert good[1] == questionable[1]
+
+    def test_human_b(self):
+        b = 0.11
+        for v, s in {b*1e0*1024**0: (0.11,  'B'),
+                     b*1e1*1024**0: (1.1,   'B'),
+                     b*1e2*1024**0: (11.0,  'B'),
+                     b*1e3*1024**0: (110.0, 'B'),
+                     b*1e1*1024**1: (1.1,   'kB'),
+                     b*1e2*1024**1: (11,    'kB'),
+                     b*1e3*1024**1: (110,   'kB'),
+                     b*1e1*1024**2: (1.1,   'MB'),
+                     b*1e2*1024**2: (11,    'MB'),
+                     b*1e3*1024**2: (110,   'MB'),
+                     b*1e1*1024**3: (1.1,   'GB'),
+                     b*1e2*1024**3: (11,    'GB'),
+                     b*1e3*1024**3: (110,   'GB'),
+                     b*1e1*1024**4: (1.1,   'TB'),
+                     b*1e2*1024**4: (11,    'TB'),
+                     b*1e3*1024**4: (110,   'TB'),
+                     b*1e1*1024**5: (1.1,   'PB'),
+                     b*1e2*1024**5: (11,    'PB'),
+                     b*1e3*1024**5: (110,   'PB'),
+                     b*1e1*1024**6: (1.1,   'EB'),
+                     b*1e2*1024**6: (11,    'EB'),
+                     b*1e3*1024**6: (110,   'EB'),
+                     }.items():
+            good = s
+            questionable = pylink.human_b(v)
+            print(good, questionable)
+            assert abs(good[0] - questionable[0]) < 1e-6
+            assert good[1] == questionable[1]
+
+    suffixes = ['TB', 'GB', 'MB', 'kB']
+
 
     def test_spreading_loss_db(self):
         assert abs(pylink.spreading_loss_db(0.5e-3)
