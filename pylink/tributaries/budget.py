@@ -144,6 +144,10 @@ def _rx_n0_dbw_per_hz(model):
     return model.boltzmann_J_per_K_db + model.rx_noise_temp_dbk
 
 
+def _cn0_initial_db(model):
+    return model.rx_power_dbw - model.rx_n0_dbw_per_hz
+
+
 def _cn0_db(model):
     return model.rx_power_dbw - model.rx_n0_dbw_per_hz
 
@@ -192,6 +196,7 @@ class LinkBudget(object):
             'rx_antenna_effective_area_dbm2': _rx_antenna_effective_area_dbm2,
             'rx_g_over_t_db': _rx_g_over_t_db,
             'rx_n0_dbw_per_hz': _rx_n0_dbw_per_hz,
+            'cn0_initial_db': _cn0_initial_db,
             'cn0_db': _cn0_db,
             'excess_noise_bandwidth_loss_db': _excess_noise_bandwidth_loss_db,
             'pfd_dbw_per_m2_per_hz': _pfd_dbw_per_m2_per_hz,
