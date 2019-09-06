@@ -154,14 +154,12 @@ https://rredc.nrel.gov/solar//spectra/am1.5/ASTMG173.html
 
     budget = pylink.HyperSpectralSNRBudget(atmo_irradiance, ground_irradiance)
 
-    geometry = pylink.Geometry(apoapsis_altitude_km=300,
-                               periapsis_altitude_km=300,
+    geometry = pylink.Geometry(apoapsis_altitude_km=500,
+                               periapsis_altitude_km=500,
                                min_elevation_deg=90)
 
     m = pylink.DAGModel([budget, geometry])
     e = m.enum
-
-    m.override(e.lens_radius_m, 0.45/2)
 
     output_dir = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
@@ -169,4 +167,4 @@ https://rredc.nrel.gov/solar//spectra/am1.5/ASTMG173.html
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     path = os.path.join(output_dir, 'snr-vnir.png')
-    plot_snr(m, start_nm=1400,  end_nm=2500,  path=path)
+    plot_snr(m, start_nm=400,  end_nm=1400,  path=path)
