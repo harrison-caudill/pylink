@@ -87,18 +87,27 @@ def _max_allowable_bitrate_hz(model):
 
 
 def __max_bitrate_hz(model, code, additional_rx_losses_db):
+    """Computes the max possible bitrate for a given system/modcode.
 
-    # The total received power (Pr,s + Pr,n) in Watts
-    PR = utils.from_db(model.rx_power_dbw)
+    This function has some overlap with the computations of effective
+    noise spectral density found in the Budget.  Because of the
+    cyclical nature of modcode selection, and its impact to the
+    transmit and receive spectral efficiencies, the N0 computations
+    are duplicated.  In principle they could probably be abstracted
+    out...but who cares...
+    """
+
+    # The total received transmitter power (Pr,s + Pr,n) in Watts
+    PR = utils.from_db(model.rx_tx_power_dbw)
 
     # The received noise power from EVM in Watts
-    PRN = PR * model.evm_pct / 100.0
+    PRN = utils.from_db(model.rx_tx_noise_power_dbw)
 
     # The received pure signal power
-    PRS = PR - PRN
+    PRS = utils.from_db(model.rx_power_dbw)
 
     # The thermal noise spectral density in Watts / Hz
-    N0 = utils.from_db(model.rx_n0_dbw_per_hz)
+    N0 = utils.from_db(model.rx_n0_thermal_dbw_per_hz)
 
 
     # Typically, the max bitrate would be computed as:
@@ -119,7 +128,7 @@ def __max_bitrate_hz(model, code, additional_rx_losses_db):
 
     max_R = model.allocation_hz * code.tx_eff
 
-    return min(utils.from_db(R_db_hz), max_R)
+    return min(R_hz, max_R)
 
 
 def _best_modulation_code(model):

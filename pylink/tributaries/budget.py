@@ -122,12 +122,46 @@ def _gso_victim_epfd(model):
     # epfd_delta = Ar - Ar_max
     pass
 
-def _rx_power_dbw(model):
+
+def _rx_tx_power_dbw(model):
+    """Received power from the transmitter.
+
+    The distinction here of consequence is that some of the power
+    received from the transmitter is signal power, and some is
+    amplified noise power.  The EVM defines the ratio of the received
+    power from the transmitter that is noise vs signal.
+    """
     return (model.tx_eirp_dbw
             - model.total_channel_loss_db
             - model.polarization_mismatch_loss_db
             - model.rx_antenna_pointing_loss_db
             + model.rx_antenna_gain_dbi)
+
+
+def _rx_power_dbw(model):
+    """Received signal power from the transmitter.
+    """
+
+    # Received transmitter power
+    PRT = model.rx_tx_power_dbw
+
+    # Correction factor for the EVM
+    f = utils.to_db(100.0 - model.evm_pct) - 20
+
+    return PRT + f
+
+
+def _rx_tx_noise_power_dbw(model):
+    """Received noise power from the transmitter.
+    """
+
+    # Received transmitter power
+    PRT = model.rx_tx_power_dbw
+
+    # Correction factor for the EVM
+    f = utils.to_db(model.evm_pct) - 20
+
+    return PRT + f
 
 
 def _rx_antenna_effective_area_dbm2(model):
@@ -140,12 +174,32 @@ def _rx_g_over_t_db(model):
     return model.rx_antenna_gain_dbi - model.rx_noise_temp_dbk
 
 
-def _rx_n0_dbw_per_hz(model):
+def _rx_n0_thermal_dbw_per_hz(model):
     return model.boltzmann_J_per_K_db + model.rx_noise_temp_dbk
 
 
-def _cn0_initial_db(model):
-    return model.rx_power_dbw - model.rx_n0_dbw_per_hz
+def _rx_n0_dbw_per_hz(model):
+
+    # Received thermal noise density (W/Hz)
+    N0_Thermal = utils.from_db(model.rx_n0_thermal_dbw_per_hz)
+
+    # The received noise power from EVM in Watts
+    PRN = utils.from_db(model.rx_tx_noise_power_dbw)
+
+    # The bandwidth over which that noise is dispersed.  Technically,
+    # the noise power is distributed over the entire transmit
+    # bandwidth which includes rolloff, however, since that is well
+    # below the main lobe's transmit power, we assume that only a
+    # trivial amount of the noise is contained within the skirt.
+    BW = model.bitrate_hz / model.rx_spectral_efficiency_bps_per_hz
+
+    # The transmitter's effective noise density (W/Hz)
+    N0_Tx = PRN / BW
+
+    # The effective noise spectral density (W/Hz)
+    N0 = N0_Thermal + N0_Tx
+
+    return utils.to_db(N0)
 
 
 def _cn0_db(model):
@@ -192,11 +246,13 @@ class LinkBudget(object):
             # calculators
             'pf_dbw_per_m2': _pf_dbw_per_m2,
             'peak_pfd_at_geo_dbw_per_m2_per_hz': _peak_pfd_at_geo_dbw_per_m2_per_hz,
+            'rx_tx_power_dbw': _rx_tx_power_dbw,
+            'rx_tx_noise_power_dbw': _rx_tx_noise_power_dbw,
             'rx_power_dbw': _rx_power_dbw,
             'rx_antenna_effective_area_dbm2': _rx_antenna_effective_area_dbm2,
             'rx_g_over_t_db': _rx_g_over_t_db,
+            'rx_n0_thermal_dbw_per_hz': _rx_n0_thermal_dbw_per_hz,
             'rx_n0_dbw_per_hz': _rx_n0_dbw_per_hz,
-            'cn0_initial_db': _cn0_initial_db,
             'cn0_db': _cn0_db,
             'excess_noise_bandwidth_loss_db': _excess_noise_bandwidth_loss_db,
             'pfd_dbw_per_m2_per_hz': _pfd_dbw_per_m2_per_hz,

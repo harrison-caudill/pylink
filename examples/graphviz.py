@@ -19,7 +19,7 @@ m = DOWNLINK
 
 # This example is designed to place the result in the export directory
 output_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'export')
-dotpath = os.path.join(output_dir, 'graph.dot')
+dotpath = os.path.join(output_dir, 'graph.gv')
 pngpath = os.path.join(output_dir, 'graph.png')
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
@@ -33,4 +33,7 @@ m.link_margin_db
 with open(dotpath, 'w') as fd:
     fd.write(m.export_deps_dot())
 
-subprocess.call(['gv', '-o', pngpath, dotpath])
+
+#sfdp -Goverlap=prism graph.gv | gvmap -e | neato -n2 -Tpng -o graph.png
+
+#subprocess.call(['gv', '-o', pngpath, dotpath])
