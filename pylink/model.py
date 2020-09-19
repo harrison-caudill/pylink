@@ -338,16 +338,18 @@ class DAGModel(object):
         self.revert(fixed)
 
         best_val = start
+        self.override(var, start)
         best_diff = abs(fixed_value - self.cached_calculate(fixed))
 
-        for i in range(0, int((stop-start)/step), 1):
-            val = start + step*i
+        for i in range(0, int(math.ceil((stop-start)/step))+1, 1):
+            val = min(start + step*i, stop)
             self.override(var, val)
             diff = abs(fixed_value - self.cached_calculate(fixed))
             if diff < best_diff:
                 best_diff = diff
                 best_val = val
 
+        assert(best_val <= stop)
         return best_val
 
     def solve_for(self, var, fixed, fixed_value, start, stop, step, rounds=3):
@@ -396,6 +398,15 @@ class DAGModel(object):
         var_is_calc = self.is_calculated_node(var)
         var_is_over = self.is_overridden(var)
         var_orig = _static_val(var, var_is_calc)
+
+        if start > stop:
+            assert(step < 0)
+            tmp = start
+            start = stop
+            stop = tmp
+            step *= -1
+        else:
+            assert(step > 0)
 
         n = (stop - start) / step
         for i in range(rounds):

@@ -326,3 +326,34 @@ class TestModel(object):
                               0.0, 10.0, 1.0,
                               rounds=i+1)
             assert abs(__round(ans, i) - tmp) < 1e-6
+
+        def __a(m):
+            return m.b
+
+        m = pylink.DAGModel([], a=__a, b=10)
+        e = m.enum
+
+        b = m.solve_for(e.b,
+                        e.a, 20,
+                        0.0, 10.0, 1.0,
+                        rounds=4)
+        assert abs(b - 10.0) < 1e-4
+
+        d = 1e-5
+        b = m.solve_for(e.b,
+                        e.a, 20,
+                        0.0, 10.0+d, 1.0,
+                        rounds=4)
+        assert abs(b - 10.0) < 1e-4
+
+        b = m.solve_for(e.b,
+                        e.a, 20,
+                        0.0, 10.0-d, 1.0,
+                        rounds=4)
+        assert abs(b - 10.0) < 1e-4
+
+        b = m.solve_for(e.b,
+                        e.a, 20,
+                        10.0, 0.0, -1.0,
+                        rounds=4)
+        assert abs(b - 10.0) < 1e-4
