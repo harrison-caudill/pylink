@@ -1,3 +1,10 @@
+`0.7 -> 0.8`
+============
+
+Bug fixes in the solver and add a Makefile so I don't have to keep
+looking up the commands.
+
+
 `0.6 -> 0.7`
 ============
 
