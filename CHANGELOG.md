@@ -1,3 +1,9 @@
+`0.8 -> 0.9`
+============
+
+Ugh...forgot to update one of the version numbers
+
+
 `0.7 -> 0.8`
 ============
 
