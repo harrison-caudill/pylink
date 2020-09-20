@@ -19,7 +19,7 @@ for srcdir, dst in data_dirs.items():
 
 setup(
     name='pylink-satcom',
-    version='0.8',
+    version='0.9',
     author='Harrison Caudill',
     author_email='harrison@hypersphere.org',
     description='Python Link Budget System',
