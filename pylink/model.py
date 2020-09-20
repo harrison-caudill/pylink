@@ -446,6 +446,11 @@ class DAGModel(object):
         return self._names.keys()
 
     def export_deps_dot(self):
+        """Generates a GraphViz-style file for generating a depgraph image.
+
+        eg:
+        gv -o export.png graph.dot
+        """
         retval = ['digraph {']
 
         for node, deps in self._deps.items():

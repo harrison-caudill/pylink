@@ -19,4 +19,5 @@ class Transmitter(object):
             'transmitter_rf_chain': rf_chain,
             'transmitter_name': name,
             'tx_power_at_pa_dbw': tx_power_at_pa_dbw,
+            'evm_pct': 5,
             }
