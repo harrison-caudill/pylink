@@ -6,7 +6,6 @@ from .. import utils
 
 
 class Code(object):
-
     def __init__(self, name, tx_eff, rx_eff, esn0_db):
         self.name = name
         self.tx_eff = tx_eff
@@ -60,10 +59,19 @@ NORMAL_DVBS2X_PERFORMANCE = [
     Code("256APSK 32/45", 4.474530, 5.593162, 18.590000),
     Code("256APSK 11/15-L", 4.615190, 5.768987, 18.840000),
     Code("256APSK 3/4", 4.720684, 5.900855, 19.570000),
-    ]
+    Code("p2400 19.2", 0.3072, 0.384, 8.0),
+    Code("p2400 24.7", 0.3952, 0.484, 8.0),
+    Code("p2400 57.6", 0.4608, 0.576, 8.0),
+    Code("p2400 115.2", 0.3291428571, 0.41142857, 8.0),
+    Code("p2400 172.8", 0.4937142857, 0.61714286, 8.0),
+    Code("p2400 230.4", 0.6582857143, 0.82285714, 8.0),
+    Code("p2400 276.4", 0.5528, 0.691, 8.0),
+    Code("p2400 345.6", 0.6912, 0.864, 8.0),
+]
 
-PERFECT_DVBS2X_PERFORMANCE = [ Code(c.name, c.rx_eff, c.rx_eff, c.esn0_db)
-                               for c in NORMAL_DVBS2X_PERFORMANCE ]
+PERFECT_DVBS2X_PERFORMANCE = [
+    Code(c.name, c.rx_eff, c.rx_eff, c.esn0_db) for c in NORMAL_DVBS2X_PERFORMANCE
+]
 
 
 def _modulation_code_lookup_table(model):
@@ -87,10 +95,9 @@ def _max_allowable_bitrate_hz(model):
 
 
 def __max_bitrate_hz(model, code, additional_rx_losses_db):
-    R_db_hz = (model.cn0_db
-               - additional_rx_losses_db
-               - model.target_margin_db
-               - code.ebn0_db)
+    R_db_hz = (
+        model.cn0_db - additional_rx_losses_db - model.target_margin_db - code.ebn0_db
+    )
 
     max_R = model.allocation_hz * code.tx_eff
 
@@ -106,8 +113,7 @@ def _best_modulation_code(model):
     def __rate_for(code):
         # DANGER WILL ROBINSON!!
         model.override(e.best_modulation_code, code)
-        added_loss = model.cached_calculate(e.additional_rx_losses_db,
-                                            clear_stack=True)
+        added_loss = model.cached_calculate(e.additional_rx_losses_db, clear_stack=True)
         model.revert(e.best_modulation_code)
         # DANGER WILL ROBINSON!!
         return __max_bitrate_hz(model, code, added_loss)
@@ -137,9 +143,9 @@ def _required_demod_ebn0_db(model):
 
 
 def _max_bitrate_hz(model):
-    return __max_bitrate_hz(model,
-                            model.best_modulation_code,
-                            model.additional_rx_losses_db)
+    return __max_bitrate_hz(
+        model, model.best_modulation_code, model.additional_rx_losses_db
+    )
 
 
 class Modulation(object):
@@ -150,7 +156,7 @@ class Modulation(object):
     most appropriate code option under the circumstances, as well.
     """
 
-    def __init__(self, name='DVB-S2X', perf=None):
+    def __init__(self, name="DVB-S2X", perf=None):
         """Create a new modulation tributary
 
         perf=[Code(), Code(), ...]
@@ -164,15 +170,14 @@ class Modulation(object):
 
         self.tribute = {
             # calculators
-            'max_allowable_bitrate_hz': _max_allowable_bitrate_hz,
-            'required_demod_ebn0_db': _required_demod_ebn0_db,
-            'best_modulation_code': _best_modulation_code,
-            'tx_spectral_efficiency_bps_per_hz': _tx_spectral_efficiency_bps_per_hz,
-            'rx_spectral_efficiency_bps_per_hz': _rx_spectral_efficiency_bps_per_hz,
-            'max_bitrate_hz': _max_bitrate_hz,
-            'modulation_code_lookup_table': _modulation_code_lookup_table,
-
+            "max_allowable_bitrate_hz": _max_allowable_bitrate_hz,
+            "required_demod_ebn0_db": _required_demod_ebn0_db,
+            "best_modulation_code": _best_modulation_code,
+            "tx_spectral_efficiency_bps_per_hz": _tx_spectral_efficiency_bps_per_hz,
+            "rx_spectral_efficiency_bps_per_hz": _rx_spectral_efficiency_bps_per_hz,
+            "max_bitrate_hz": _max_bitrate_hz,
+            "modulation_code_lookup_table": _modulation_code_lookup_table,
             # constants
-            'modulation_name': name,
-            'modulation_performance_table': perf,
-            }
+            "modulation_name": name,
+            "modulation_performance_table": perf,
+        }
